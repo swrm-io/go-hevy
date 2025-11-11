@@ -13,6 +13,31 @@ import (
 	"github.com/swrm-io/go-hevy"
 )
 
+func TestWorkoutPagination(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		page := req.URL.Query().Get("page")
+
+		file := fmt.Sprintf("testdata/responses/workout-%s.json", page)
+		data, err := os.ReadFile(file)
+		assert.NoError(t, err)
+		_, err = res.Write(data)
+		assert.NoError(t, err)
+	}))
+	defer srv.Close()
+
+	client := hevy.NewClient("my-fake-api-key")
+	client.APIURL = srv.URL
+
+	workouts := []hevy.Workout{}
+	pager := client.Workouts()
+	for x := range pager {
+		workouts = append(workouts, x)
+	}
+
+	assert.NotEmpty(t, workouts)
+
+	assert.Len(t, workouts, 6)
+}
 func TestWorkout(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		switch req.URL.Path {
@@ -49,11 +74,22 @@ func TestWorkout(t *testing.T) {
 	client := hevy.NewClient("my-fake-api-key")
 	client.APIURL = srv.URL
 
-	t.Run("Test Paginated Workouts", func(t *testing.T) {
-		workouts, err := client.Workouts()
+	t.Run("Test All Workouts", func(t *testing.T) {
+		workouts, err := client.AllWorkouts()
+		for i := range workouts {
+			t.Log(workouts[i].ID)
+		}
 		assert.NoError(t, err)
 		assert.NotEmpty(t, workouts)
 		assert.Len(t, workouts, 6)
+	})
+
+	t.Run("Test Get Workouts", func(t *testing.T) {
+		workouts, next, err := client.GetWorkouts(2, 2)
+		assert.Equal(t, 3, next)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, workouts)
+		assert.Len(t, workouts, 2)
 	})
 
 	t.Run("Test Workout Count", func(t *testing.T) {
