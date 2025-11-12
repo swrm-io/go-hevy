@@ -31,11 +31,24 @@ client := hevy.NewClient("your-api-key")
 ### Fetching Workouts
 
 ```go
-// Get all workouts
-workouts, err := client.Workouts()
+// Get all workouts (handles pagination automatically)
+workouts, err := client.AllWorkouts()
 if err != nil {
     // handle error
 }
+
+// Iterate over workouts one by one (memory efficient for large datasets)
+for workout := range client.Workouts() {
+    // process workout
+}
+
+// Get a paginated list of workouts
+workouts, nextPage, err := client.GetWorkouts(1, 10)
+if err != nil {
+    // handle error
+}
+currentPage = nextPage
+workouts, nextPage, err := client.Getworkouts(currentPage, 10)
 
 // Get a specific workout by ID
 workoutID := uuid.MustParse("workout-uuid")
@@ -50,12 +63,27 @@ if err != nil {
     // handle error
 }
 
-// Get workout events since a specific time (for syncing)
+// Get all workout events since a specific time (for syncing)
 since := time.Now().AddDate(0, -1, 0) // Last month
-events, err := client.WorkoutEvents(since)
+events, err := client.AllWorkoutEvents(since)
 if err != nil {
     // handle error
 }
+
+// Iterate over workout events (memory efficient)
+since := time.Now().AddDate(0, -1, 0) // Last month
+for event := range client.WorkoutEvents(since) {
+    // process event
+}
+
+// Get a paginated list of workout events
+since := time.Now().AddDate(0, -1, 0) // Last month
+events, nextPage, err := client.GetWorkoutEvents(1, 10, since)
+if err != nil {
+    // handle error
+}
+currentPage = nextPage
+events, nextPage, err := client.GetWorkoutEvents(currentPage, 10, since)
 ```
 
 ### Fetching Routines

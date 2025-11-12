@@ -1,6 +1,6 @@
 module github.com/swrm-io/go-hevy
 
-go 1.22.3
+go 1.25.1
 
 require (
 	github.com/google/uuid v1.6.0
