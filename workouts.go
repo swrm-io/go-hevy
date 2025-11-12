@@ -128,35 +128,80 @@ func (c Client) WorkoutCount() (int, error) {
 	return result.Count, nil
 }
 
-// WorkoutEvents retrieves a paged list of workout events (updates or deletes) since a given date.
-// Events are ordered from newest to oldest. The intention is to allow clients to keep their local
-// cache of workouts up to date without having to fetch the entire list of workouts.
-func (c Client) WorkoutEvents(since time.Time) ([]Event, error) {
+// WorkoutEvents returns an iterator that yields workout events (updates or deletes) since a given date.
+func (c Client) WorkoutEvents(since time.Time) func(func(Event) bool) {
+	return func(yield func(Event) bool) {
+		page := 1
+		size := 10
+
+		for {
+			resp, next, err := c.GetWorkoutEvents(page, size, since)
+			if err != nil {
+				return
+			}
+
+			for _, event := range resp {
+				if !yield(event) {
+					return
+				}
+			}
+
+			if next == 0 {
+				break
+			}
+			page++
+		}
+	}
+}
+
+// AllWorkoutEvents gets all workout events since a given date.
+// This is a convenience method that handles pagination for you, if you have a large
+// number of events this may take a while to complete.
+func (c Client) AllWorkoutEvents(since time.Time) ([]Event, error) {
 	events := []Event{}
 
 	page := 1
 	size := 10
 
 	for {
-		q := map[string]string{
-			"page":     fmt.Sprintf("%d", page),
-			"pageSize": fmt.Sprintf("%d", size),
-			"since":    since.Format("RFC3339Nano"),
-		}
-		url := c.constructURL("workouts/events", q)
-		result := workoutEventResponse{}
-		err := c.get(url, &result)
+		resp, next, err := c.GetWorkoutEvents(page, size, since)
 		if err != nil {
 			return nil, err
 		}
 
-		events = append(events, result.Events...)
-
-		if result.Page == result.PageCount {
+		events = append(events, resp...)
+		if next == 0 {
 			break
 		}
-		page++
+		page = next
 	}
 
 	return events, nil
+}
+
+// GetWorkoutEvents retrieves a paged list of workout events (updates or deletes) since a given date.
+// Page is the paginated page number (starting at 1) and size is the number of events to return per page.
+// The maximum page size is 10, limited by the API.
+// It returns the list of events, the next page (0 if there are no more pages) and an error if one occurred.
+func (c Client) GetWorkoutEvents(page int, size int, since time.Time) ([]Event, int, error) {
+	if size > 10 {
+		size = 10
+	}
+	q := map[string]string{
+		"page":     fmt.Sprintf("%d", page),
+		"pageSize": fmt.Sprintf("%d", size),
+		"since":    since.Format("RFC3339Nano"),
+	}
+	url := c.constructURL("workouts/events", q)
+	result := workoutEventResponse{}
+	err := c.get(url, &result)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	next := result.Page + 1
+	if result.Page >= result.PageCount {
+		next = 0
+	}
+	return result.Events, next, nil
 }

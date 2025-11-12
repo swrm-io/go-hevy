@@ -111,24 +111,36 @@ func TestWorkout(t *testing.T) {
 	})
 
 	t.Run("Test Workout Events", func(t *testing.T) {
-		since := time.Now()
-		events, err := client.WorkoutEvents(since)
-		assert.NoError(t, err)
+		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		events := []hevy.Event{}
+		iterator := client.WorkoutEvents(since)
+		iterator(func(e hevy.Event) bool {
+			events = append(events, e)
+			return true
+		})
 
+		assert.NotEmpty(t, events)
 		assert.Len(t, events, 3)
-		updated := 0
-		deleted := 0
+	})
 
-		for _, evnt := range events {
-			if evnt.EventType == hevy.DeletedEvent {
-				deleted++
-			}
-			if evnt.EventType == hevy.UpdatedEvent {
-				updated++
-			}
-		}
+	t.Run("Test Get Workout Events", func(t *testing.T) {
+		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		events, next, err := client.GetWorkoutEvents(1, 1, since)
 
-		assert.Equal(t, 2, updated)
-		assert.Equal(t, 1, deleted)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, events)
+		assert.Len(t, events, 1)
+		assert.Equal(t, 2, next)
+	})
+
+	t.Run("Test Get All Workouts", func(t *testing.T) {
+		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+		events := []hevy.Event{}
+		allEvents, err := client.AllWorkoutEvents(since)
+		assert.NoError(t, err)
+		events = append(events, allEvents...)
+
+		assert.NotEmpty(t, events)
+		assert.Len(t, events, 3)
 	})
 }
