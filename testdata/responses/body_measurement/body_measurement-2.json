@@ -1,0 +1,31 @@
+{
+  "page": 2,
+  "page_count": 3,
+  "body_measurements": [
+    {
+      "id": 6933955,
+      "date": "2024-11-14",
+      "weight_kg": 84.41364044597255,
+      "neck_cm": 38.1762,
+      "shoulder_cm": 118.79580000000001,
+      "chest_cm": 101.4984,
+      "left_bicep_cm": 32.5882,
+      "right_bicep_cm": 32.5882,
+      "left_forearm_cm": 26.288999999999998,
+      "right_forearm_cm": 26.9748,
+      "waist": 94.3864,
+      "hips": 98.09479999999999,
+      "left_thigh": 54.787800000000004,
+      "right_thigh": 55.092600000000004,
+      "left_calf": 36.195,
+      "right_calf": 36.3982,
+      "created_at": "2024-11-15T06:06:40.603Z"
+    },
+    {
+      "id": 6661337,
+      "date": "2024-11-05",
+      "weight_kg": 85.77441917427947,
+      "created_at": "2024-11-05T15:54:59.864Z"
+    }
+  ]
+}

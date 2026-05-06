@@ -106,4 +106,18 @@ func TestUnmarshal(t *testing.T) {
 		assert.Empty(t, event.ID)
 		assert.NotEmpty(t, event.Workout)
 	})
+
+	t.Run("Body Measurement", func(t *testing.T) {
+		measurement := hevy.BodyMeasurement{}
+
+		data, err := os.ReadFile("testdata/base/bodymeasurement.json")
+		assert.NoError(t, err, "error reading testdata/base/bodymeasurement.json")
+		err = json.Unmarshal(data, &measurement)
+		assert.NoError(t, err, "error unmarshalling testdata/base/bodymeasurement.json")
+
+		assert.NotEmpty(t, measurement)
+		assert.IsType(t, int(0), measurement.ID)
+		assert.NotEmpty(t, measurement.CreatedAt)
+
+	})
 }
