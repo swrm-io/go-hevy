@@ -160,3 +160,9 @@ type Event struct {
 	DeletedAt time.Time `json:"deleted_at"` // when the type is deleted, when it was removed
 	Workout   Workout   `json:"workout"`    // On an update, output the workout
 }
+
+type User struct {
+	ID   uuid.UUID `json:"id"`   // The user ID.
+	Name string    `json:"name"` // The user's name.
+	URL  string    `json:"url"`  // The user's profile URL.
+}
