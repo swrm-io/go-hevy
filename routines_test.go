@@ -12,6 +12,31 @@ import (
 	"github.com/swrm-io/go-hevy"
 )
 
+func TestRoutinePagination(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		page := req.URL.Query().Get("page")
+
+		file := fmt.Sprintf("testdata/responses/routine/routine-%s.json", page)
+		data, err := os.ReadFile(file)
+		assert.NoError(t, err)
+		_, err = res.Write(data)
+		assert.NoError(t, err)
+	}))
+	defer srv.Close()
+
+	client := hevy.NewClient("my-fake-api-key")
+	client.APIURL = srv.URL
+
+	routines := []hevy.Routine{}
+	pager := client.Routines()
+	for x := range pager {
+		routines = append(routines, x)
+	}
+
+	assert.NotEmpty(t, routines)
+
+	assert.Len(t, routines, 3)
+}
 func TestRoutine(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		switch req.URL.Path {
