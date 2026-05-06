@@ -1,0 +1,20 @@
+{
+  "page": 3,
+  "page_count": 4,
+  "routine_folders": [
+    {
+      "id": 1205736,
+      "index": 5,
+      "title": "Beginner Upper/Lower (Gym Equipment)",
+      "updated_at": "2025-06-18T20:40:23.474Z",
+      "created_at": "2025-06-18T20:40:23.474Z"
+    },
+    {
+      "id": 1098460,
+      "index": 6,
+      "title": "Intermediate Push/Pull/Legs (Gym Equipment)",
+      "updated_at": "2025-05-14T21:34:32.654Z",
+      "created_at": "2025-05-14T21:34:32.654Z"
+    }
+  ]
+}

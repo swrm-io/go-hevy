@@ -154,6 +154,14 @@ type Routine struct {
 	Exercises []Exercise `json:"exercises"`  // Exercise that belong to the workout.
 }
 
+type RoutineFolder struct {
+	ID        int       `json:"id"`         // The routine folder ID.
+	Index     int       `json:"index"`      // Index indicating the order of the routine folder.
+	Title     string    `json:"title"`      // The routine folder title.
+	UpdatedAt time.Time `json:"updated_at"` // ISO 8601 timestamp of when the routine folder was last updated.
+	CreatedAt time.Time `json:"created_at"` // ISO 8601 timestamp of when the routine folder was created.
+}
+
 type Event struct {
 	EventType EventType `json:"type"`       // The Type of Event
 	ID        uuid.UUID `json:"id"`         // When deleted, this references the workout that was removed
