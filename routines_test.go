@@ -18,13 +18,13 @@ func TestRoutine(t *testing.T) {
 		case "/v1/routines":
 			page := req.URL.Query().Get("page")
 
-			file := fmt.Sprintf("testdata/responses/routine-%s.json", page)
+			file := fmt.Sprintf("testdata/responses/routine/routine-%s.json", page)
 			data, err := os.ReadFile(file)
 			assert.NoError(t, err)
 			_, err = res.Write(data)
 			assert.NoError(t, err)
 		case "/v1/routines/9c3e6a25-67e9-4c0c-860c-286e13fe9924":
-			data, err := os.ReadFile("testdata/responses/single-routine.json")
+			data, err := os.ReadFile("testdata/responses/routine/single-routine.json")
 			assert.NoError(t, err)
 			_, err = res.Write(data)
 			assert.NoError(t, err)
