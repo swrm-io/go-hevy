@@ -65,8 +65,8 @@ func (c Client) GetRoutineFolders(page int, size int) ([]RoutineFolder, int, err
 	}
 
 	q := map[string]string{
-		"page": fmt.Sprintf("%d", page),
-		"size": fmt.Sprintf("%d", size),
+		"page":     fmt.Sprintf("%d", page),
+		"pageSize": fmt.Sprintf("%d", size),
 	}
 
 	url := c.constructURL("routine_folders", q)
