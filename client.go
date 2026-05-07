@@ -1,6 +1,7 @@
 package hevy
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +14,10 @@ type apiTransport struct {
 	apiKey string
 	agent  string
 	base   http.RoundTripper
+}
+
+type apiErrorResponse struct {
+	Error string `json:"error"`
 }
 
 type APIError struct {
@@ -82,14 +87,28 @@ func (c Client) get(url string, resp any) error {
 	return nil
 }
 
-func (c Client) post(url string, resp any) error {
-	data, err := c.client.Post(url, "application/json", nil)
+func (c Client) post(url string, req any, resp any) error {
+	reqBody, err := json.Marshal(req)
 	if err != nil {
-		return APIError{Message: err.Error(), Code: data.StatusCode}
+		return err
 	}
-	defer data.Body.Close()
 
+	data, err := c.client.Post(url, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return err
+	}
+
+	defer data.Body.Close()
 	body, err := io.ReadAll(data.Body)
+	if (data.StatusCode != http.StatusOK) && (data.StatusCode != http.StatusCreated) {
+		var apiErr apiErrorResponse
+		err = json.Unmarshal(body, &apiErr)
+		if err != nil {
+			return fmt.Errorf("API error: status code %d, unable to parse error response", data.StatusCode)
+		}
+		return APIError{Message: apiErr.Error, Code: data.StatusCode}
+	}
+
 	if err != nil {
 		return err
 	}
@@ -98,6 +117,6 @@ func (c Client) post(url string, resp any) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println(string(body))
 	return nil
 }

@@ -94,8 +94,8 @@ func TestRoutineFolder(t *testing.T) {
 		routineFolder, err := client.CreateRoutineFolder("New Routine Folder")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, routineFolder)
-		assert.Equal(t, 42, routineFolder.ID)
-		assert.Equal(t, 1, routineFolder.Index)
-		assert.Equal(t, "Intermediate Full-Body (Gym Equipment)", routineFolder.Title)
+		assert.Equal(t, 2827406, routineFolder.ID)
+		assert.Equal(t, 0, routineFolder.Index)
+		assert.Equal(t, "Testing Folder", routineFolder.Title)
 	})
 }

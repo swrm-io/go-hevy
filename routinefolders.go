@@ -7,6 +7,10 @@ type routineFolderResponse struct {
 	RoutineFolders []RoutineFolder `json:"routine_folders"`
 }
 
+type routineFolderSingleResponse struct {
+	RoutineFolder RoutineFolder `json:"routine_folder"`
+}
+
 type routineFolderCreate struct {
 	RoutineFolder struct {
 		Title string `json:"title"`
@@ -109,11 +113,11 @@ func (c Client) CreateRoutineFolder(title string) (RoutineFolder, error) {
 	body := routineFolderCreate{}
 	body.RoutineFolder.Title = title
 
-	result := RoutineFolder{}
-	err := c.post(url, &result)
+	result := routineFolderSingleResponse{}
+	err := c.post(url, body, &result)
 	if err != nil {
 		return RoutineFolder{}, err
 	}
 
-	return result, nil
+	return result.RoutineFolder, nil
 }
