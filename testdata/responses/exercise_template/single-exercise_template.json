@@ -1,0 +1,12 @@
+{
+  "id": "4F5866F8",
+  "title": "Back Extension (Hyperextension)",
+  "type": "reps_only",
+  "primary_muscle_group": "lower_back",
+  "secondary_muscle_groups": [
+    "hamstrings",
+    "glutes"
+  ],
+  "equipment": "machine",
+  "is_custom": false
+}

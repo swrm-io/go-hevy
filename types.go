@@ -280,3 +280,12 @@ func (bm *BodyMeasurement) UnmarshalJSON(b []byte) error {
 
 	return nil
 }
+
+type ExerciseTemplate struct {
+	ID                    string   `json:"id"`                      // The exercise template ID.
+	Title                 string   `json:"title"`                   // The exercise template title.
+	Type                  string   `json:"type"`                    // The exercise template type. Can be one of: "weight_reps", "weight_reps_distance", "weight_reps_duration", "reps", "reps_distance", "reps_duration", "distance", "distance_duration", "duration"
+	PrimaryMuscleGroup    string   `json:"primary_muscle_group"`    // The primary muscle group targeted by the exercise template. Can be one of: "abdominals", "abductors", "adductors", "biceps", "calves", "cardio", "delts", "forearms", "glutes", "hamstrings", "lats", "pectorals", "quads", "traps", "triceps", "unknown"
+	SecondaryMuscleGroups []string `json:"secondary_muscle_groups"` // The secondary muscle group targeted by the exercise template. Can be one of: "abdominals", "abductors", "adductors", "biceps", "calves", "cardio", "delts", "forearms", "glutes", "hamstrings", "lats", "pectorals", "quads", "traps", "triceps", "unknown"
+	IsCustom              bool     `json:"is_custom"`               // Whether the exercise template is a custom template created by the user.
+}

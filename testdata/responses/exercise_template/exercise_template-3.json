@@ -1,0 +1,43 @@
+{
+  "page": 3,
+  "page_count": 3,
+  "exercise_templates": [
+    {
+      "id": "D4A2FE7E",
+      "title": "Around The World",
+      "type": "weight_reps",
+      "primary_muscle_group": "chest",
+      "secondary_muscle_groups": [
+        "upper_back",
+        "shoulders",
+        "lats"
+      ],
+      "equipment": "dumbbell",
+      "is_custom": false
+    },
+    {
+      "id": "5BFF35BA",
+      "title": "Assisted Pistol Squats",
+      "type": "reps_only",
+      "primary_muscle_group": "quadriceps",
+      "secondary_muscle_groups": [
+        "hamstrings",
+        "glutes"
+      ],
+      "equipment": "none",
+      "is_custom": false
+    },
+    {
+      "id": "4F5866F8",
+      "title": "Back Extension (Hyperextension)",
+      "type": "reps_only",
+      "primary_muscle_group": "lower_back",
+      "secondary_muscle_groups": [
+        "hamstrings",
+        "glutes"
+      ],
+      "equipment": "machine",
+      "is_custom": false
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "page": 2,
+  "page_count": 3,
+  "exercise_templates": [
+    {
+      "id": "5E0DDACE",
+      "title": "Aerobics",
+      "type": "duration",
+      "primary_muscle_group": "cardio",
+      "secondary_muscle_groups": [],
+      "equipment": "none",
+      "is_custom": false
+    },
+    {
+      "id": "43573BB8",
+      "title": "Air Bike",
+      "type": "duration",
+      "primary_muscle_group": "cardio",
+      "secondary_muscle_groups": [],
+      "equipment": "machine",
+      "is_custom": false
+    },
+    {
+      "id": "A69FF221",
+      "title": "Arnold Press (Dumbbell)",
+      "type": "weight_reps",
+      "primary_muscle_group": "shoulders",
+      "secondary_muscle_groups": [
+        "triceps"
+      ],
+      "equipment": "dumbbell",
+      "is_custom": false
+    }
+  ]
+}
