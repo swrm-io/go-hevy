@@ -30,7 +30,8 @@ func TestWorkoutPagination(t *testing.T) {
 
 	workouts := []hevy.Workout{}
 	pager := client.Workouts()
-	for x := range pager {
+	for x, err := range pager {
+		assert.NoError(t, err)
 		workouts = append(workouts, x)
 	}
 
@@ -114,10 +115,10 @@ func TestWorkout(t *testing.T) {
 		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 		events := []hevy.Event{}
 		iterator := client.WorkoutEvents(since)
-		iterator(func(e hevy.Event) bool {
+		for e, err := range iterator {
+			assert.NoError(t, err)
 			events = append(events, e)
-			return true
-		})
+		}
 
 		assert.NotEmpty(t, events)
 		assert.Len(t, events, 3)

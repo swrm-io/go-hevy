@@ -55,7 +55,10 @@ if err != nil {
 }
 
 // Iterate over workouts one by one (memory efficient for large datasets)
-for workout := range client.Workouts() {
+for workout, err := range client.Workouts() {
+    if err != nil {
+        // handle error
+    }
     fmt.Println(workout.Title)
 }
 
@@ -95,7 +98,10 @@ if err != nil {
 }
 
 // Iterate over workout events (memory efficient)
-for event := range client.WorkoutEvents(since) {
+for event, err := range client.WorkoutEvents(since) {
+    if err != nil {
+        // handle error
+    }
     switch event.EventType {
     case hevy.EventTypeUpdated:
         // process updated workout
@@ -121,7 +127,10 @@ if err != nil {
 }
 
 // Iterate over routines one by one
-for routine := range client.Routines() {
+for routine, err := range client.Routines() {
+    if err != nil {
+        // handle error
+    }
     fmt.Println(routine.Title)
 }
 
@@ -149,7 +158,10 @@ if err != nil {
 }
 
 // Iterate over routine folders one by one
-for folder := range client.RoutineFolders() {
+for folder, err := range client.RoutineFolders() {
+    if err != nil {
+        // handle error
+    }
     fmt.Println(folder.Title)
 }
 
@@ -176,7 +188,10 @@ if err != nil {
 }
 
 // Iterate over body measurements one by one
-for m := range client.BodyMeasurements() {
+for m, err := range client.BodyMeasurements() {
+    if err != nil {
+        // handle error
+    }
     fmt.Printf("Weight: %.2f kg (%.2f lbs)\n", m.WeightKG, m.WeightLB)
 }
 

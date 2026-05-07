@@ -23,19 +23,21 @@ type workoutEventResponse struct {
 }
 
 // Workouts returns an iterator that yields workouts one by one.
-func (c Client) Workouts() func(func(Workout) bool) {
+// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
+func (c Client) Workouts() func(func(Workout, error) bool) {
 	size := 10
-	return func(yield func(Workout) bool) {
+	return func(yield func(Workout, error) bool) {
 		page := 1
 
 		for {
 			resp, next, err := c.GetWorkouts(page, size)
 			if err != nil {
+				yield(Workout{}, err)
 				return
 			}
 
 			for _, workout := range resp {
-				if !yield(workout) {
+				if !yield(workout, nil) {
 					return
 				}
 			}
@@ -129,19 +131,21 @@ func (c Client) WorkoutCount() (int, error) {
 }
 
 // WorkoutEvents returns an iterator that yields workout events (updates or deletes) since a given date.
-func (c Client) WorkoutEvents(since time.Time) func(func(Event) bool) {
-	return func(yield func(Event) bool) {
+// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
+func (c Client) WorkoutEvents(since time.Time) func(func(Event, error) bool) {
+	return func(yield func(Event, error) bool) {
 		page := 1
 		size := 10
 
 		for {
 			resp, next, err := c.GetWorkoutEvents(page, size, since)
 			if err != nil {
+				yield(Event{}, err)
 				return
 			}
 
 			for _, event := range resp {
-				if !yield(event) {
+				if !yield(event, nil) {
 					return
 				}
 			}

@@ -28,7 +28,8 @@ func TestRoutineFolderPagination(t *testing.T) {
 
 	routineFolders := []hevy.RoutineFolder{}
 	pager := client.RoutineFolders()
-	for x := range pager {
+	for x, err := range pager {
+		assert.NoError(t, err)
 		routineFolders = append(routineFolders, x)
 	}
 

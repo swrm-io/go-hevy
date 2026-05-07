@@ -8,19 +8,21 @@ type exerciseTemplateResponse struct {
 }
 
 // ExerciseTemplates returns an iterator that yields exercise templates one by one.
-func (c Client) ExerciseTemplates() func(func(ExerciseTemplate) bool) {
+// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
+func (c Client) ExerciseTemplates() func(func(ExerciseTemplate, error) bool) {
 	size := 10
-	return func(yield func(ExerciseTemplate) bool) {
+	return func(yield func(ExerciseTemplate, error) bool) {
 		page := 1
 
 		for {
 			resp, next, err := c.GetExerciseTemplates(page, size)
 			if err != nil {
+				yield(ExerciseTemplate{}, err)
 				return
 			}
 
 			for _, template := range resp {
-				if !yield(template) {
+				if !yield(template, nil) {
 					return
 				}
 			}

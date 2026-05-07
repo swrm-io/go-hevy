@@ -8,19 +8,21 @@ type routineFolderResponse struct {
 }
 
 // RoutineFolders returns an iterator that yields routine folders one by one.
-func (c Client) RoutineFolders() func(func(RoutineFolder) bool) {
+// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
+func (c Client) RoutineFolders() func(func(RoutineFolder, error) bool) {
 	size := 10
-	return func(yield func(RoutineFolder) bool) {
+	return func(yield func(RoutineFolder, error) bool) {
 		page := 1
 
 		for {
 			resp, next, err := c.GetRoutineFolders(page, size)
 			if err != nil {
+				yield(RoutineFolder{}, err)
 				return
 			}
 
 			for _, routineFolder := range resp {
-				if !yield(routineFolder) {
+				if !yield(routineFolder, nil) {
 					return
 				}
 			}

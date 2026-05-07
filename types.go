@@ -57,6 +57,7 @@ func (w *Workout) UnmarshalJSON(b []byte) error {
 	w.Description = base.Description
 	w.StartTime = base.StartTime
 	w.EndTime = base.EndTime
+	w.CreatedAt = base.CreatedAt
 	w.UpdatedAt = base.UpdatedAt
 	w.Exercises = base.Exercises
 	w.VolumeKG = vkg
@@ -69,7 +70,7 @@ type Exercise struct {
 	Index               int     `json:"index"`                // Index indicating the order of the exercise in the workout / routine.
 	Title               string  `json:"title"`                // Title of the exercise
 	Notes               string  `json:"notes"`                // Notes on the exercise
-	ExcersiseTemplateID string  `json:"exercise_template_id"` // The id of the exercise template. This can be used to fetch the exercise template.
+	ExerciseTemplateID string  `json:"exercise_template_id"` // The id of the exercise template. This can be used to fetch the exercise template.
 	SupersetID          int     `json:"supersets_id"`         // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
 	Sets                []Set   `json:"sets"`                 // List of sets for the exercise.
 	VolumeKG            float64 `json:"-"`                    // Volume of exercise in KG
@@ -95,7 +96,7 @@ func (e *Exercise) UnmarshalJSON(b []byte) error {
 	e.Index = base.Index
 	e.Title = base.Title
 	e.Notes = base.Notes
-	e.ExcersiseTemplateID = base.ExcersiseTemplateID
+	e.ExerciseTemplateID = base.ExerciseTemplateID
 	e.SupersetID = base.SupersetID
 	e.Sets = base.Sets
 	e.VolumeKG = vkg

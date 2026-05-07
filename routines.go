@@ -12,19 +12,22 @@ type routineResponse struct {
 	Routines []Routine `json:"routines"`
 }
 
-func (c Client) Routines() func(func(Routine) bool) {
+// Routines returns an iterator that yields routines one by one.
+// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
+func (c Client) Routines() func(func(Routine, error) bool) {
 	size := 10
-	return func(yield func(Routine) bool) {
+	return func(yield func(Routine, error) bool) {
 		page := 1
 
 		for {
 			resp, next, err := c.GetRoutines(page, size)
 			if err != nil {
+				yield(Routine{}, err)
 				return
 			}
 
 			for _, routine := range resp {
-				if !yield(routine) {
+				if !yield(routine, nil) {
 					return
 				}
 			}
@@ -78,7 +81,7 @@ func (c Client) GetRoutines(page int, size int) ([]Routine, int, error) {
 	}
 
 	next := result.Page + 1
-	if result.Page == result.PageCount {
+	if result.Page >= result.PageCount {
 		next = 0
 	}
 

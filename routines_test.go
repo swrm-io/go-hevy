@@ -29,7 +29,8 @@ func TestRoutinePagination(t *testing.T) {
 
 	routines := []hevy.Routine{}
 	pager := client.Routines()
-	for x := range pager {
+	for x, err := range pager {
+		assert.NoError(t, err)
 		routines = append(routines, x)
 	}
 

@@ -28,7 +28,8 @@ func TestExerciseTemplatePagination(t *testing.T) {
 
 	templates := []hevy.ExerciseTemplate{}
 	pager := client.ExerciseTemplates()
-	for x := range pager {
+	for x, err := range pager {
+		assert.NoError(t, err)
 		templates = append(templates, x)
 	}
 

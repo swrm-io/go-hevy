@@ -30,7 +30,8 @@ func TestBodyMeasurementPagination(t *testing.T) {
 
 	bodyMeasurements := []hevy.BodyMeasurement{}
 	pager := client.BodyMeasurements()
-	for x := range pager {
+	for x, err := range pager {
+		assert.NoError(t, err)
 		bodyMeasurements = append(bodyMeasurements, x)
 	}
 
