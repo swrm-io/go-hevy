@@ -7,6 +7,12 @@ type routineFolderResponse struct {
 	RoutineFolders []RoutineFolder `json:"routine_folders"`
 }
 
+type routineFolderCreate struct {
+	RoutineFolder struct {
+		Title string `json:"title"`
+	} `json:"routine_folder"`
+}
+
 // RoutineFolders returns an iterator that yields routine folders one by one.
 // If an error occurs fetching a page, it is yielded as the second value and iteration stops.
 func (c Client) RoutineFolders() func(func(RoutineFolder, error) bool) {
@@ -91,6 +97,20 @@ func (c Client) RoutineFolder(id int) (RoutineFolder, error) {
 	url := c.constructURL(path, map[string]string{})
 	result := RoutineFolder{}
 	err := c.get(url, &result)
+	if err != nil {
+		return RoutineFolder{}, err
+	}
+
+	return result, nil
+}
+
+func (c Client) CreateRoutineFolder(title string) (RoutineFolder, error) {
+	url := c.constructURL("routine_folders", map[string]string{})
+	body := routineFolderCreate{}
+	body.RoutineFolder.Title = title
+
+	result := RoutineFolder{}
+	err := c.post(url, &result)
 	if err != nil {
 		return RoutineFolder{}, err
 	}

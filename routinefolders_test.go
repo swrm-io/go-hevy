@@ -42,13 +42,18 @@ func TestRoutineFolder(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		switch req.URL.Path {
 		case "/v1/routine_folders":
-			page := req.URL.Query().Get("page")
-
-			file := fmt.Sprintf("testdata/responses/routine_folder/routine_folder-%s.json", page)
+			var file string
+			if req.Method == http.MethodGet {
+				page := req.URL.Query().Get("page")
+				file = fmt.Sprintf("testdata/responses/routine_folder/routine_folder-%s.json", page)
+			} else {
+				file = "testdata/responses/routine_folder/create_folder.json"
+			}
 			data, err := os.ReadFile(file)
 			assert.NoError(t, err)
 			_, err = res.Write(data)
 			assert.NoError(t, err)
+
 		case "/v1/routine_folders/1273009":
 			data, err := os.ReadFile("testdata/responses/routine_folder/single-routine_folder.json")
 			assert.NoError(t, err)
@@ -83,5 +88,14 @@ func TestRoutineFolder(t *testing.T) {
 		assert.NoError(t, err)
 		assert.NotEmpty(t, routineFolders)
 		assert.Len(t, routineFolders, 2)
+	})
+
+	t.Run("Test Create Routine Folder", func(t *testing.T) {
+		routineFolder, err := client.CreateRoutineFolder("New Routine Folder")
+		assert.NoError(t, err)
+		assert.NotEmpty(t, routineFolder)
+		assert.Equal(t, 42, routineFolder.ID)
+		assert.Equal(t, 1, routineFolder.Index)
+		assert.Equal(t, "Intermediate Full-Body (Gym Equipment)", routineFolder.Title)
 	})
 }

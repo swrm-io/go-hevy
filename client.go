@@ -15,6 +15,15 @@ type apiTransport struct {
 	base   http.RoundTripper
 }
 
+type APIError struct {
+	Message string `json:"error"`
+	Code    int    `json:"_"`
+}
+
+func (e APIError) Error() string {
+	return fmt.Sprintf("API error: %s (code: %d)", e.Message, e.Code)
+}
+
 // roundTrip is a custom roundtripper that adds the necessary request fields
 // for API requests
 func (t apiTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -57,6 +66,26 @@ func (c Client) get(url string, resp any) error {
 	data, err := c.client.Get(url)
 	if err != nil {
 		return err
+	}
+	defer data.Body.Close()
+
+	body, err := io.ReadAll(data.Body)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(body, resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c Client) post(url string, resp any) error {
+	data, err := c.client.Post(url, "application/json", nil)
+	if err != nil {
+		return APIError{Message: err.Error(), Code: data.StatusCode}
 	}
 	defer data.Body.Close()
 
