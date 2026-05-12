@@ -136,4 +136,3 @@ func (s *WorkoutsService) EventsAll(ctx context.Context, opts *WorkoutEventsOpti
 		return p.Events, p.PageCount, nil
 	})
 }
-

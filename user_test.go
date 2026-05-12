@@ -9,7 +9,7 @@ import (
 )
 
 func TestUserInfo(t *testing.T) {
-	_, client := newTestServer(t, "/v1/user/info", "user_info.json", 200)
+	client := newTestServer(t, "/v1/user/info", "user_info.json")
 	user, err := client.User.Info(context.Background())
 	require.NoError(t, err)
 	assert.Equal(t, "khabiaz", user.Name)

@@ -10,19 +10,19 @@ import (
 )
 
 func TestExerciseHistoryGet(t *testing.T) {
-	const id = "11A123F3"
-	_, client := newTestServer(t, "/v1/exercise_history/"+id, "exercise_history_get.json", 200)
-	entries, err := client.ExerciseHistory.Get(context.Background(), id, nil)
+	const exerciseID = "11A123F3"
+	client := newTestServer(t, "/v1/exercise_history/"+exerciseID, "exercise_history_get.json")
+	entries, err := client.ExerciseHistory.Get(context.Background(), exerciseID, nil)
 	require.NoError(t, err)
 	require.Len(t, entries, 3)
 
-	e := entries[0]
-	assert.Equal(t, "5c079430-4d04-4507-9718-e60310665dee", e.WorkoutID)
-	assert.Equal(t, "Full Body 3", e.WorkoutTitle)
-	assert.Equal(t, id, e.ExerciseTemplateID)
-	assert.Equal(t, hevy.SetTypeWarmup, e.SetType)
-	require.NotNil(t, e.WeightKg)
-	assert.Equal(t, 45.35929094356398, *e.WeightKg)
-	require.NotNil(t, e.Reps)
-	assert.Equal(t, 12, *e.Reps)
+	entry := entries[0]
+	assert.Equal(t, "5c079430-4d04-4507-9718-e60310665dee", entry.WorkoutID)
+	assert.Equal(t, "Full Body 3", entry.WorkoutTitle)
+	assert.Equal(t, exerciseID, entry.ExerciseTemplateID)
+	assert.Equal(t, hevy.SetTypeWarmup, entry.SetType)
+	require.NotNil(t, entry.WeightKg)
+	assert.Equal(t, 45.35929094356398, *entry.WeightKg)
+	require.NotNil(t, entry.Reps)
+	assert.Equal(t, 12, *entry.Reps)
 }

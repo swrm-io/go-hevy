@@ -16,69 +16,69 @@ const (
 type RPE float64
 
 const (
-	RPE6   RPE = 6
-	RPE7   RPE = 7
-	RPE75  RPE = 7.5
-	RPE8   RPE = 8
-	RPE85  RPE = 8.5
-	RPE9   RPE = 9
-	RPE95  RPE = 9.5
-	RPE10  RPE = 10
+	RPE6  RPE = 6
+	RPE7  RPE = 7
+	RPE75 RPE = 7.5
+	RPE8  RPE = 8
+	RPE85 RPE = 8.5
+	RPE9  RPE = 9
+	RPE95 RPE = 9.5
+	RPE10 RPE = 10
 )
 
 // CustomExerciseType represents the tracking type of a custom exercise.
 type CustomExerciseType string
 
 const (
-	ExerciseTypeWeightReps            CustomExerciseType = "weight_reps"
-	ExerciseTypeRepsOnly              CustomExerciseType = "reps_only"
-	ExerciseTypeBodyweightReps        CustomExerciseType = "bodyweight_reps"
+	ExerciseTypeWeightReps             CustomExerciseType = "weight_reps"
+	ExerciseTypeRepsOnly               CustomExerciseType = "reps_only"
+	ExerciseTypeBodyweightReps         CustomExerciseType = "bodyweight_reps"
 	ExerciseTypeBodyweightAssistedReps CustomExerciseType = "bodyweight_assisted_reps"
-	ExerciseTypeDuration              CustomExerciseType = "duration"
-	ExerciseTypeWeightDuration        CustomExerciseType = "weight_duration"
-	ExerciseTypeDistanceDuration      CustomExerciseType = "distance_duration"
-	ExerciseTypeShortDistanceWeight   CustomExerciseType = "short_distance_weight"
+	ExerciseTypeDuration               CustomExerciseType = "duration"
+	ExerciseTypeWeightDuration         CustomExerciseType = "weight_duration"
+	ExerciseTypeDistanceDuration       CustomExerciseType = "distance_duration"
+	ExerciseTypeShortDistanceWeight    CustomExerciseType = "short_distance_weight"
 )
 
 // MuscleGroup represents a muscle group category.
 type MuscleGroup string
 
 const (
-	MuscleGroupAbdominals  MuscleGroup = "abdominals"
-	MuscleGroupShoulders   MuscleGroup = "shoulders"
-	MuscleGroupBiceps      MuscleGroup = "biceps"
-	MuscleGroupTriceps     MuscleGroup = "triceps"
-	MuscleGroupForearms    MuscleGroup = "forearms"
-	MuscleGroupQuadriceps  MuscleGroup = "quadriceps"
-	MuscleGroupHamstrings  MuscleGroup = "hamstrings"
-	MuscleGroupCalves      MuscleGroup = "calves"
-	MuscleGroupGlutes      MuscleGroup = "glutes"
-	MuscleGroupAbductors   MuscleGroup = "abductors"
-	MuscleGroupAdductors   MuscleGroup = "adductors"
-	MuscleGroupLats        MuscleGroup = "lats"
-	MuscleGroupUpperBack   MuscleGroup = "upper_back"
-	MuscleGroupTraps       MuscleGroup = "traps"
-	MuscleGroupLowerBack   MuscleGroup = "lower_back"
-	MuscleGroupChest       MuscleGroup = "chest"
-	MuscleGroupCardio      MuscleGroup = "cardio"
-	MuscleGroupNeck        MuscleGroup = "neck"
-	MuscleGroupFullBody    MuscleGroup = "full_body"
-	MuscleGroupOther       MuscleGroup = "other"
+	MuscleGroupAbdominals MuscleGroup = "abdominals"
+	MuscleGroupShoulders  MuscleGroup = "shoulders"
+	MuscleGroupBiceps     MuscleGroup = "biceps"
+	MuscleGroupTriceps    MuscleGroup = "triceps"
+	MuscleGroupForearms   MuscleGroup = "forearms"
+	MuscleGroupQuadriceps MuscleGroup = "quadriceps"
+	MuscleGroupHamstrings MuscleGroup = "hamstrings"
+	MuscleGroupCalves     MuscleGroup = "calves"
+	MuscleGroupGlutes     MuscleGroup = "glutes"
+	MuscleGroupAbductors  MuscleGroup = "abductors"
+	MuscleGroupAdductors  MuscleGroup = "adductors"
+	MuscleGroupLats       MuscleGroup = "lats"
+	MuscleGroupUpperBack  MuscleGroup = "upper_back"
+	MuscleGroupTraps      MuscleGroup = "traps"
+	MuscleGroupLowerBack  MuscleGroup = "lower_back"
+	MuscleGroupChest      MuscleGroup = "chest"
+	MuscleGroupCardio     MuscleGroup = "cardio"
+	MuscleGroupNeck       MuscleGroup = "neck"
+	MuscleGroupFullBody   MuscleGroup = "full_body"
+	MuscleGroupOther      MuscleGroup = "other"
 )
 
 // EquipmentCategory represents equipment used for an exercise.
 type EquipmentCategory string
 
 const (
-	EquipmentNone            EquipmentCategory = "none"
-	EquipmentBarbell         EquipmentCategory = "barbell"
-	EquipmentDumbbell        EquipmentCategory = "dumbbell"
-	EquipmentKettlebell      EquipmentCategory = "kettlebell"
-	EquipmentMachine         EquipmentCategory = "machine"
-	EquipmentPlate           EquipmentCategory = "plate"
-	EquipmentResistanceBand  EquipmentCategory = "resistance_band"
-	EquipmentSuspension      EquipmentCategory = "suspension"
-	EquipmentOther           EquipmentCategory = "other"
+	EquipmentNone           EquipmentCategory = "none"
+	EquipmentBarbell        EquipmentCategory = "barbell"
+	EquipmentDumbbell       EquipmentCategory = "dumbbell"
+	EquipmentKettlebell     EquipmentCategory = "kettlebell"
+	EquipmentMachine        EquipmentCategory = "machine"
+	EquipmentPlate          EquipmentCategory = "plate"
+	EquipmentResistanceBand EquipmentCategory = "resistance_band"
+	EquipmentSuspension     EquipmentCategory = "suspension"
+	EquipmentOther          EquipmentCategory = "other"
 )
 
 // WorkoutSet represents a single set within a workout exercise.
@@ -178,40 +178,40 @@ type ExerciseTemplate struct {
 
 // ExerciseHistoryEntry represents a single set entry from exercise history.
 type ExerciseHistoryEntry struct {
-	WorkoutID          string   `json:"workout_id"`
-	WorkoutTitle       string   `json:"workout_title"`
+	WorkoutID          string    `json:"workout_id"`
+	WorkoutTitle       string    `json:"workout_title"`
 	WorkoutStartTime   time.Time `json:"workout_start_time"`
 	WorkoutEndTime     time.Time `json:"workout_end_time"`
-	ExerciseTemplateID string   `json:"exercise_template_id"`
-	WeightKg           *float64 `json:"weight_kg"`
-	Reps               *int     `json:"reps"`
-	DistanceMeters     *int     `json:"distance_meters"`
-	DurationSeconds    *int     `json:"duration_seconds"`
-	RPE                *float64 `json:"rpe"`
-	CustomMetric       *float64 `json:"custom_metric"`
-	SetType            SetType  `json:"set_type"`
+	ExerciseTemplateID string    `json:"exercise_template_id"`
+	WeightKg           *float64  `json:"weight_kg"`
+	Reps               *int      `json:"reps"`
+	DistanceMeters     *int      `json:"distance_meters"`
+	DurationSeconds    *int      `json:"duration_seconds"`
+	RPE                *float64  `json:"rpe"`
+	CustomMetric       *float64  `json:"custom_metric"`
+	SetType            SetType   `json:"set_type"`
 }
 
 // BodyMeasurement represents a body measurement snapshot for a given date.
 type BodyMeasurement struct {
-	Date          string   `json:"date"`
-	WeightKg      *float64 `json:"weight_kg"`
-	LeanMassKg    *float64 `json:"lean_mass_kg"`
-	FatPercent    *float64 `json:"fat_percent"`
-	NeckCm        *float64 `json:"neck_cm"`
-	ShoulderCm    *float64 `json:"shoulder_cm"`
-	ChestCm       *float64 `json:"chest_cm"`
-	LeftBicepCm   *float64 `json:"left_bicep_cm"`
-	RightBicepCm  *float64 `json:"right_bicep_cm"`
-	LeftForearmCm *float64 `json:"left_forearm_cm"`
+	Date           string   `json:"date"`
+	WeightKg       *float64 `json:"weight_kg"`
+	LeanMassKg     *float64 `json:"lean_mass_kg"`
+	FatPercent     *float64 `json:"fat_percent"`
+	NeckCm         *float64 `json:"neck_cm"`
+	ShoulderCm     *float64 `json:"shoulder_cm"`
+	ChestCm        *float64 `json:"chest_cm"`
+	LeftBicepCm    *float64 `json:"left_bicep_cm"`
+	RightBicepCm   *float64 `json:"right_bicep_cm"`
+	LeftForearmCm  *float64 `json:"left_forearm_cm"`
 	RightForearmCm *float64 `json:"right_forearm_cm"`
-	AbdomenCm     *float64 `json:"abdomen"`
-	WaistCm       *float64 `json:"waist"`
-	HipsCm        *float64 `json:"hips"`
-	LeftThighCm   *float64 `json:"left_thigh"`
-	RightThighCm  *float64 `json:"right_thigh"`
-	LeftCalfCm    *float64 `json:"left_calf"`
-	RightCalfCm   *float64 `json:"right_calf"`
+	AbdomenCm      *float64 `json:"abdomen"`
+	WaistCm        *float64 `json:"waist"`
+	HipsCm         *float64 `json:"hips"`
+	LeftThighCm    *float64 `json:"left_thigh"`
+	RightThighCm   *float64 `json:"right_thigh"`
+	LeftCalfCm     *float64 `json:"left_calf"`
+	RightCalfCm    *float64 `json:"right_calf"`
 }
 
 // UserInfo contains basic information about the authenticated user.
@@ -232,21 +232,21 @@ const (
 // WorkoutEvent represents a single event from the workout events feed.
 // Check Type to determine whether Workout or DeletedAt/DeletedID is populated.
 type WorkoutEvent struct {
-	Type      WorkoutEventType `json:"type"`
+	Type WorkoutEventType `json:"type"`
 	// Populated when Type == WorkoutEventUpdated.
-	Workout   *Workout         `json:"workout,omitempty"`
+	Workout *Workout `json:"workout,omitempty"`
 	// Populated when Type == WorkoutEventDeleted.
-	ID        string           `json:"id,omitempty"`
-	DeletedAt *time.Time       `json:"deleted_at,omitempty"`
+	ID        string     `json:"id,omitempty"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty"`
 }
 
 // --- Paginated response types ---
 
 // PaginatedWorkouts is the response from GET /v1/workouts.
 type PaginatedWorkouts struct {
-	Page       int       `json:"page"`
-	PageCount  int       `json:"page_count"`
-	Workouts   []Workout `json:"workouts"`
+	Page      int       `json:"page"`
+	PageCount int       `json:"page_count"`
+	Workouts  []Workout `json:"workouts"`
 }
 
 // WorkoutCount is the response from GET /v1/workouts/count.
@@ -289,9 +289,9 @@ type ExerciseHistory struct {
 
 // PaginatedBodyMeasurements is the response from GET /v1/body_measurements.
 type PaginatedBodyMeasurements struct {
-	Page             int               `json:"page"`
-	PageCount        int               `json:"page_count"`
-	Measurements     []BodyMeasurement `json:"body_measurements"`
+	Page         int               `json:"page"`
+	PageCount    int               `json:"page_count"`
+	Measurements []BodyMeasurement `json:"body_measurements"`
 }
 
 // --- Request body types ---

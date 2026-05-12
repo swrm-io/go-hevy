@@ -10,7 +10,7 @@ import (
 )
 
 func TestExerciseTemplatesList(t *testing.T) {
-	_, client := newTestServer(t, "/v1/exercise_templates", "exercise_templates_list.json", 200)
+	client := newTestServer(t, "/v1/exercise_templates", "exercise_templates_list.json")
 	page, err := client.ExerciseTemplates.List(context.Background(), 1, 3)
 	require.NoError(t, err)
 	assert.Equal(t, 146, page.PageCount)
@@ -25,7 +25,7 @@ func TestExerciseTemplatesList(t *testing.T) {
 
 func TestExerciseTemplatesGet(t *testing.T) {
 	const id = "3BC06AD3"
-	_, client := newTestServer(t, "/v1/exercise_templates/"+id, "exercise_template_get.json", 200)
+	client := newTestServer(t, "/v1/exercise_templates/"+id, "exercise_template_get.json")
 	tmpl, err := client.ExerciseTemplates.Get(context.Background(), id)
 	require.NoError(t, err)
 	assert.Equal(t, id, tmpl.ID)
@@ -37,13 +37,13 @@ func TestExerciseTemplatesGet(t *testing.T) {
 }
 
 func TestExerciseTemplatesInvalidPageSize(t *testing.T) {
-	_, client := newTestServer(t, "/v1/exercise_templates", "exercise_templates_list.json", 200)
+	client := newTestServer(t, "/v1/exercise_templates", "exercise_templates_list.json")
 	_, err := client.ExerciseTemplates.List(context.Background(), 1, 101)
 	assert.ErrorIs(t, err, hevy.ErrInvalidPageSize)
 }
 
 func TestExerciseLimitExceeded(t *testing.T) {
-	_, client := newErrorServer(t, 403)
+	client := newErrorServer(t, 403)
 	_, err := client.ExerciseTemplates.Create(context.Background(), hevy.CreateExerciseInput{
 		Title:             "Test",
 		ExerciseType:      hevy.ExerciseTypeWeightReps,

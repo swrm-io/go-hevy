@@ -11,7 +11,7 @@ import (
 )
 
 func TestAPIErrorDetails(t *testing.T) {
-	_, client := newErrorServer(t, 400)
+	client := newErrorServer(t, 400)
 	_, err := client.Workouts.Get(context.Background(), "bad-id")
 	require.Error(t, err)
 
@@ -22,7 +22,7 @@ func TestAPIErrorDetails(t *testing.T) {
 }
 
 func TestAPIErrorUnwrap(t *testing.T) {
-	_, client := newErrorServer(t, 401)
+	client := newErrorServer(t, 401)
 	_, err := client.User.Info(context.Background())
 	assert.ErrorIs(t, err, hevy.ErrUnauthorized)
 

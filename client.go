@@ -105,7 +105,7 @@ func WithHTTPClient(hc *http.Client) Option {
 
 // New creates a new Hevy API client authenticated with the given API key.
 func New(apiKey string, opts ...Option) *Client {
-	co := &core{
+	cfg := &core{
 		apiKey:  apiKey,
 		baseURL: defaultBaseURL,
 		httpClient: &http.Client{
@@ -113,30 +113,30 @@ func New(apiKey string, opts ...Option) *Client {
 		},
 	}
 	for _, o := range opts {
-		o(co)
+		o(cfg)
 	}
 	return &Client{
-		Workouts:          &WorkoutsService{co},
-		Routines:          &RoutinesService{co},
-		RoutineFolders:    &RoutineFoldersService{co},
-		ExerciseTemplates: &ExerciseTemplatesService{co},
-		ExerciseHistory:   &ExerciseHistoryService{co},
-		BodyMeasurements:  &BodyMeasurementsService{co},
-		User:              &UserService{co},
+		Workouts:          &WorkoutsService{cfg},
+		Routines:          &RoutinesService{cfg},
+		RoutineFolders:    &RoutineFoldersService{cfg},
+		ExerciseTemplates: &ExerciseTemplatesService{cfg},
+		ExerciseHistory:   &ExerciseHistoryService{cfg},
+		BodyMeasurements:  &BodyMeasurementsService{cfg},
+		User:              &UserService{cfg},
 	}
 }
 
 func (c *core) newRequest(ctx context.Context, method, path string, body any) (*http.Request, error) {
-	u := c.baseURL + path
+	rawURL := c.baseURL + path
 	var bodyReader io.Reader
 	if body != nil {
-		b, err := json.Marshal(body)
+		encoded, err := json.Marshal(body)
 		if err != nil {
 			return nil, fmt.Errorf("hevy: marshal request body: %w", err)
 		}
-		bodyReader = bytes.NewReader(b)
+		bodyReader = bytes.NewReader(encoded)
 	}
-	req, err := http.NewRequestWithContext(ctx, method, u, bodyReader)
+	req, err := http.NewRequestWithContext(ctx, method, rawURL, bodyReader)
 	if err != nil {
 		return nil, err
 	}
@@ -156,17 +156,17 @@ func (c *core) do(req *http.Request, out any) error {
 	}
 	defer resp.Body.Close()
 
-	b, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("hevy: read response body: %w", err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return newAPIError(resp.StatusCode, string(b), req)
+		return newAPIError(resp.StatusCode, string(respBody), req)
 	}
 
-	if out != nil && len(b) > 0 {
-		if err := json.Unmarshal(b, out); err != nil {
+	if out != nil && len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, out); err != nil {
 			return fmt.Errorf("hevy: decode response: %w", err)
 		}
 	}
@@ -228,21 +228,21 @@ func (c *core) put(ctx context.Context, path string, body, out any) error {
 	return c.do(req, out)
 }
 
-// validatePageSize returns ErrInvalidPageSize if pageSize exceeds max.
-func validatePageSize(pageSize, max int) error {
-	if pageSize > max {
-		return fmt.Errorf("%w: maximum is %d, got %d", ErrInvalidPageSize, max, pageSize)
+// validatePageSize returns ErrInvalidPageSize if pageSize exceeds maxPageSize.
+func validatePageSize(pageSize, maxPageSize int) error {
+	if pageSize > maxPageSize {
+		return fmt.Errorf("%w: maximum is %d, got %d", ErrInvalidPageSize, maxPageSize, pageSize)
 	}
 	return nil
 }
 
 func pageQuery(page, pageSize int) url.Values {
-	q := url.Values{}
+	params := url.Values{}
 	if page > 0 {
-		q.Set("page", strconv.Itoa(page))
+		params.Set("page", strconv.Itoa(page))
 	}
 	if pageSize > 0 {
-		q.Set("pageSize", strconv.Itoa(pageSize))
+		params.Set("pageSize", strconv.Itoa(pageSize))
 	}
-	return q
+	return params
 }

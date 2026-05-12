@@ -4,7 +4,7 @@ Package hevy provides a Go client for the Hevy workout tracking API.
 A Hevy Pro subscription is required. Find your API key in the Hevy app under
 Settings → API.
 
-# Creating a client
+# Creating a Client
 
 	client := hevy.New("your-api-key")
 

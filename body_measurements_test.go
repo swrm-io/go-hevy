@@ -10,7 +10,7 @@ import (
 )
 
 func TestBodyMeasurementsList(t *testing.T) {
-	_, client := newTestServer(t, "/v1/body_measurements", "body_measurements_list.json", 200)
+	client := newTestServer(t, "/v1/body_measurements", "body_measurements_list.json")
 	page, err := client.BodyMeasurements.List(context.Background(), 1, 2)
 	require.NoError(t, err)
 	assert.Equal(t, 3, page.PageCount)
@@ -23,7 +23,7 @@ func TestBodyMeasurementsList(t *testing.T) {
 }
 
 func TestBodyMeasurementsGet(t *testing.T) {
-	_, client := newTestServer(t, "/v1/body_measurements/2026-02-26", "body_measurement_get.json", 200)
+	client := newTestServer(t, "/v1/body_measurements/2026-02-26", "body_measurement_get.json")
 	m, err := client.BodyMeasurements.Get(context.Background(), "2026-02-26")
 	require.NoError(t, err)
 	assert.Equal(t, "2026-02-26", m.Date)
@@ -32,7 +32,7 @@ func TestBodyMeasurementsGet(t *testing.T) {
 }
 
 func TestBodyMeasurementsConflict(t *testing.T) {
-	_, client := newErrorServer(t, 409)
+	client := newErrorServer(t, 409)
 	err := client.BodyMeasurements.Create(context.Background(), hevy.BodyMeasurement{
 		Date: "2026-02-26",
 	})
@@ -40,13 +40,13 @@ func TestBodyMeasurementsConflict(t *testing.T) {
 }
 
 func TestBodyMeasurementsGetNotFound(t *testing.T) {
-	_, client := newErrorServer(t, 404)
+	client := newErrorServer(t, 404)
 	_, err := client.BodyMeasurements.Get(context.Background(), "2000-01-01")
 	assert.ErrorIs(t, err, hevy.ErrNotFound)
 }
 
 func TestBodyMeasurementsListInvalidPageSize(t *testing.T) {
-	_, client := newTestServer(t, "/v1/body_measurements", "body_measurements_list.json", 200)
+	client := newTestServer(t, "/v1/body_measurements", "body_measurements_list.json")
 	_, err := client.BodyMeasurements.List(context.Background(), 1, 11)
 	assert.ErrorIs(t, err, hevy.ErrInvalidPageSize)
 }

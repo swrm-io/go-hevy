@@ -19,17 +19,17 @@ type GetHistoryOptions struct {
 
 // Get returns the full history of sets performed for a given exercise template.
 func (s *ExerciseHistoryService) Get(ctx context.Context, exerciseTemplateID string, opts *GetHistoryOptions) ([]ExerciseHistoryEntry, error) {
-	q := url.Values{}
+	params := url.Values{}
 	if opts != nil {
 		if opts.StartDate != nil {
-			q.Set("start_date", opts.StartDate.UTC().Format(time.RFC3339))
+			params.Set("start_date", opts.StartDate.UTC().Format(time.RFC3339))
 		}
 		if opts.EndDate != nil {
-			q.Set("end_date", opts.EndDate.UTC().Format(time.RFC3339))
+			params.Set("end_date", opts.EndDate.UTC().Format(time.RFC3339))
 		}
 	}
 	var out ExerciseHistory
-	if err := s.c.get(ctx, "/v1/exercise_history/"+exerciseTemplateID, q, &out); err != nil {
+	if err := s.c.get(ctx, "/v1/exercise_history/"+exerciseTemplateID, params, &out); err != nil {
 		return nil, err
 	}
 	return out.ExerciseHistory, nil

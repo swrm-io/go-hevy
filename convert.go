@@ -1,7 +1,7 @@
 package hevy
 
 const (
-	kgToLbs   = 2.20462262185
+	kgToLbs    = 2.20462262185
 	cmToInches = 0.393700787402
 )
 
@@ -16,24 +16,24 @@ func convertPtr(v *float64, factor float64) *float64 {
 // BodyMeasurementImperial holds a BodyMeasurement with weights in pounds and
 // lengths in inches.
 type BodyMeasurementImperial struct {
-	Date             string
-	WeightLbs        *float64
-	LeanMassLbs      *float64
-	FatPercent       *float64
-	NeckIn           *float64
-	ShoulderIn       *float64
-	ChestIn          *float64
-	LeftBicepIn      *float64
-	RightBicepIn     *float64
-	LeftForearmIn    *float64
-	RightForearmIn   *float64
-	AbdomenIn        *float64
-	WaistIn          *float64
-	HipsIn           *float64
-	LeftThighIn      *float64
-	RightThighIn     *float64
-	LeftCalfIn       *float64
-	RightCalfIn      *float64
+	Date           string
+	WeightLbs      *float64
+	LeanMassLbs    *float64
+	FatPercent     *float64
+	NeckIn         *float64
+	ShoulderIn     *float64
+	ChestIn        *float64
+	LeftBicepIn    *float64
+	RightBicepIn   *float64
+	LeftForearmIn  *float64
+	RightForearmIn *float64
+	AbdomenIn      *float64
+	WaistIn        *float64
+	HipsIn         *float64
+	LeftThighIn    *float64
+	RightThighIn   *float64
+	LeftCalfIn     *float64
+	RightCalfIn    *float64
 }
 
 // Imperial converts the measurement to imperial units (pounds and inches).

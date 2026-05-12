@@ -9,16 +9,16 @@ import (
 )
 
 func TestBodyMeasurementImperial(t *testing.T) {
-	m := hevy.BodyMeasurement{
-		Date:      "2026-02-26",
-		WeightKg:  ptr(100.0),
+	measurement := hevy.BodyMeasurement{
+		Date:       "2026-02-26",
+		WeightKg:   ptr(100.0),
 		LeanMassKg: ptr(80.0),
 		FatPercent: ptr(20.0),
-		NeckCm:    ptr(40.0),
-		WaistCm:   ptr(90.0),
+		NeckCm:     ptr(40.0),
+		WaistCm:    ptr(90.0),
 	}
 
-	imp := m.Imperial()
+	imp := measurement.Imperial()
 
 	assert.Equal(t, "2026-02-26", imp.Date)
 
