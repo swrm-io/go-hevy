@@ -1,292 +1,394 @@
 package hevy
 
-import (
-	"encoding/json"
-	"math"
-	"time"
+import "time"
 
-	"github.com/google/uuid"
-)
-
+// SetType represents the type of a workout or routine set.
 type SetType string
-type EventType string
 
 const (
-	NormalSet  SetType = "normal"
-	WarmupSet  SetType = "warmup"
-	DropSet    SetType = "dropset"
-	FailureSet SetType = "failure"
-
-	UpdatedEvent EventType = "updated"
-	DeletedEvent EventType = "deleted"
+	SetTypeWarmup  SetType = "warmup"
+	SetTypeNormal  SetType = "normal"
+	SetTypeFailure SetType = "failure"
+	SetTypeDropset SetType = "dropset"
 )
 
-// Base Classes
+// RPE represents Rating of Perceived Exertion values.
+type RPE float64
 
+const (
+	RPE6   RPE = 6
+	RPE7   RPE = 7
+	RPE75  RPE = 7.5
+	RPE8   RPE = 8
+	RPE85  RPE = 8.5
+	RPE9   RPE = 9
+	RPE95  RPE = 9.5
+	RPE10  RPE = 10
+)
+
+// CustomExerciseType represents the tracking type of a custom exercise.
+type CustomExerciseType string
+
+const (
+	ExerciseTypeWeightReps            CustomExerciseType = "weight_reps"
+	ExerciseTypeRepsOnly              CustomExerciseType = "reps_only"
+	ExerciseTypeBodyweightReps        CustomExerciseType = "bodyweight_reps"
+	ExerciseTypeBodyweightAssistedReps CustomExerciseType = "bodyweight_assisted_reps"
+	ExerciseTypeDuration              CustomExerciseType = "duration"
+	ExerciseTypeWeightDuration        CustomExerciseType = "weight_duration"
+	ExerciseTypeDistanceDuration      CustomExerciseType = "distance_duration"
+	ExerciseTypeShortDistanceWeight   CustomExerciseType = "short_distance_weight"
+)
+
+// MuscleGroup represents a muscle group category.
+type MuscleGroup string
+
+const (
+	MuscleGroupAbdominals  MuscleGroup = "abdominals"
+	MuscleGroupShoulders   MuscleGroup = "shoulders"
+	MuscleGroupBiceps      MuscleGroup = "biceps"
+	MuscleGroupTriceps     MuscleGroup = "triceps"
+	MuscleGroupForearms    MuscleGroup = "forearms"
+	MuscleGroupQuadriceps  MuscleGroup = "quadriceps"
+	MuscleGroupHamstrings  MuscleGroup = "hamstrings"
+	MuscleGroupCalves      MuscleGroup = "calves"
+	MuscleGroupGlutes      MuscleGroup = "glutes"
+	MuscleGroupAbductors   MuscleGroup = "abductors"
+	MuscleGroupAdductors   MuscleGroup = "adductors"
+	MuscleGroupLats        MuscleGroup = "lats"
+	MuscleGroupUpperBack   MuscleGroup = "upper_back"
+	MuscleGroupTraps       MuscleGroup = "traps"
+	MuscleGroupLowerBack   MuscleGroup = "lower_back"
+	MuscleGroupChest       MuscleGroup = "chest"
+	MuscleGroupCardio      MuscleGroup = "cardio"
+	MuscleGroupNeck        MuscleGroup = "neck"
+	MuscleGroupFullBody    MuscleGroup = "full_body"
+	MuscleGroupOther       MuscleGroup = "other"
+)
+
+// EquipmentCategory represents equipment used for an exercise.
+type EquipmentCategory string
+
+const (
+	EquipmentNone            EquipmentCategory = "none"
+	EquipmentBarbell         EquipmentCategory = "barbell"
+	EquipmentDumbbell        EquipmentCategory = "dumbbell"
+	EquipmentKettlebell      EquipmentCategory = "kettlebell"
+	EquipmentMachine         EquipmentCategory = "machine"
+	EquipmentPlate           EquipmentCategory = "plate"
+	EquipmentResistanceBand  EquipmentCategory = "resistance_band"
+	EquipmentSuspension      EquipmentCategory = "suspension"
+	EquipmentOther           EquipmentCategory = "other"
+)
+
+// WorkoutSet represents a single set within a workout exercise.
+type WorkoutSet struct {
+	Index           int      `json:"index"`
+	Type            SetType  `json:"type"`
+	WeightKg        *float64 `json:"weight_kg"`
+	Reps            *int     `json:"reps"`
+	DistanceMeters  *int     `json:"distance_meters"`
+	DurationSeconds *int     `json:"duration_seconds"`
+	RPE             *float64 `json:"rpe"`
+	CustomMetric    *float64 `json:"custom_metric"`
+}
+
+// WorkoutExercise represents an exercise within a workout.
+type WorkoutExercise struct {
+	Index              int          `json:"index"`
+	Title              string       `json:"title"`
+	Notes              string       `json:"notes"`
+	ExerciseTemplateID string       `json:"exercise_template_id"`
+	SupersetID         *int         `json:"superset_id"`
+	Sets               []WorkoutSet `json:"sets"`
+}
+
+// Workout represents a completed workout session.
 type Workout struct {
-	ID          uuid.UUID  `json:"id"`          // The workout ID.
-	Title       string     `json:"title"`       // The workout title.
-	Description string     `json:"description"` // The workout description.
-	StartTime   time.Time  `json:"start_time"`  // ISO 8601 timestamp of when the workout was recorded to have started.
-	EndTime     time.Time  `json:"end_time"`    // ISO 8601 timestamp of when the workout was recorded to have ended.
-	CreatedAt   time.Time  `json:"created_at"`  // ISO 8601 timestamp of when the workout was created.
-	UpdatedAt   time.Time  `json:"updated_at"`  // ISO 8601 timestamp of when the workout was last updated.
-	Exercises   []Exercise `json:"exercises"`   // Exercise that belong to the workout.
-	VolumeKG    float64    `json:"-"`           // Volume of workout in KG
-	VolumeLB    float64    `json:"-"`           // Volume of the workout in LB
+	ID          string            `json:"id"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	RoutineID   string            `json:"routine_id"`
+	StartTime   time.Time         `json:"start_time"`
+	EndTime     time.Time         `json:"end_time"`
+	UpdatedAt   time.Time         `json:"updated_at"`
+	CreatedAt   time.Time         `json:"created_at"`
+	Exercises   []WorkoutExercise `json:"exercises"`
 }
 
-func (w *Workout) UnmarshalJSON(b []byte) error {
-	type mask Workout
-	var base mask
-
-	err := json.Unmarshal(b, &base)
-	if err != nil {
-		return err
-	}
-
-	vkg := float64(0)
-	vlb := float64(0)
-	for _, s := range base.Exercises {
-		vkg = vkg + s.VolumeKG
-		vlb = vlb + s.VolumeLB
-	}
-
-	w.ID = base.ID
-	w.Title = base.Title
-	w.Description = base.Description
-	w.StartTime = base.StartTime
-	w.EndTime = base.EndTime
-	w.CreatedAt = base.CreatedAt
-	w.UpdatedAt = base.UpdatedAt
-	w.Exercises = base.Exercises
-	w.VolumeKG = vkg
-	w.VolumeLB = vlb
-
-	return nil
+// RepRange represents a rep range for routine sets.
+type RepRange struct {
+	Start *float64 `json:"start"`
+	End   *float64 `json:"end"`
 }
 
-type Exercise struct {
-	Index               int     `json:"index"`                // Index indicating the order of the exercise in the workout / routine.
-	Title               string  `json:"title"`                // Title of the exercise
-	Notes               string  `json:"notes"`                // Notes on the exercise
-	ExerciseTemplateID string  `json:"exercise_template_id"` // The id of the exercise template. This can be used to fetch the exercise template.
-	SupersetID          int     `json:"supersets_id"`         // The id of the superset that the exercise belongs to. A value of null indicates the exercise is not part of a superset.
-	Sets                []Set   `json:"sets"`                 // List of sets for the exercise.
-	VolumeKG            float64 `json:"-"`                    // Volume of exercise in KG
-	VolumeLB            float64 `json:"-"`                    // Volume of the exercise in LB
+// RoutineSet represents a single set within a routine exercise.
+type RoutineSet struct {
+	Index           int       `json:"index"`
+	Type            SetType   `json:"type"`
+	WeightKg        *float64  `json:"weight_kg"`
+	Reps            *int      `json:"reps"`
+	RepRange        *RepRange `json:"rep_range"`
+	DistanceMeters  *int      `json:"distance_meters"`
+	DurationSeconds *int      `json:"duration_seconds"`
+	RPE             *float64  `json:"rpe"`
+	CustomMetric    *float64  `json:"custom_metric"`
 }
 
-func (e *Exercise) UnmarshalJSON(b []byte) error {
-	type mask Exercise
-	var base mask
-
-	err := json.Unmarshal(b, &base)
-	if err != nil {
-		return err
-	}
-
-	vkg := float64(0)
-	vlb := float64(0)
-	for _, s := range base.Sets {
-		vkg = vkg + s.VolumeKG
-		vlb = vlb + s.VolumeLB
-	}
-
-	e.Index = base.Index
-	e.Title = base.Title
-	e.Notes = base.Notes
-	e.ExerciseTemplateID = base.ExerciseTemplateID
-	e.SupersetID = base.SupersetID
-	e.Sets = base.Sets
-	e.VolumeKG = vkg
-	e.VolumeLB = vlb
-
-	return nil
+// RoutineExercise represents an exercise within a routine.
+type RoutineExercise struct {
+	Index              int          `json:"index"`
+	Title              string       `json:"title"`
+	RestSeconds        int          `json:"rest_seconds"`
+	Notes              string       `json:"notes"`
+	ExerciseTemplateID string       `json:"exercise_template_id"`
+	SupersetID         *int         `json:"superset_id"`
+	Sets               []RoutineSet `json:"sets"`
 }
 
-// Set of the specifc workout
-type Set struct {
-	Index           int     `json:"index"`            // Index indicating the order of the set in the workout.
-	SetType         SetType `json:"set_type"`         // The type of set.
-	WeightKG        float64 `json:"weight_kg"`        // Weight lifted in kilograms.
-	WeightLB        float64 `json:"-"`                // Weight lifted in pounds (computed)
-	VolumeKG        float64 `json:"-"`                // Total Volume of the set in KG
-	VolumeLB        float64 `json:"-"`                // Total volume of the set in LB
-	Reps            int     `json:"reps"`             // Number of reps logged for the set
-	DistanceMeters  float64 `json:"distance_meters"`  // Number of meters logged for the set
-	DurationSeconds int     `json:"duration_seconds"` // Number of seconds logged for the set
-	RPE             float64 `json:"rpe"`              // RPE (Relative perceived exertion) value logged for the set
-}
-
-// UnmarshalJSON unmarshals the given struct, and also computes the
-// following fields:
-// WeightLB
-// VolumeKG
-// VolumeLB
-func (s *Set) UnmarshalJSON(b []byte) error {
-	type mask Set
-	var base mask
-
-	err := json.Unmarshal(b, &base)
-	if err != nil {
-		return err
-	}
-
-	s.Index = base.Index
-	s.SetType = base.SetType
-	s.WeightKG = base.WeightKG
-	s.WeightLB = math.Round(s.WeightKG * 2.20462262185)
-	s.VolumeKG = s.WeightKG * float64(base.Reps)
-	s.VolumeLB = s.WeightLB * float64(base.Reps)
-	s.Reps = base.Reps
-	s.DistanceMeters = base.DistanceMeters
-	s.DurationSeconds = base.DurationSeconds
-	s.RPE = base.RPE
-
-	return nil
-}
-
+// Routine represents a workout routine (template).
 type Routine struct {
-	ID        uuid.UUID  `json:"id"`         // The routine ID.
-	Title     string     `json:"title"`      // The routine title.
-	CreatedAt time.Time  `json:"created_at"` // ISO 8601 timestamp of when the routine was created.
-	UpdatedAt time.Time  `json:"updated_at"` // ISO 8601 timestamp of when the routine was last updated.
-	Exercises []Exercise `json:"exercises"`  // Exercise that belong to the workout.
+	ID        string            `json:"id"`
+	Title     string            `json:"title"`
+	FolderID  *float64          `json:"folder_id"`
+	UpdatedAt time.Time         `json:"updated_at"`
+	CreatedAt time.Time         `json:"created_at"`
+	Exercises []RoutineExercise `json:"exercises"`
 }
 
+// RoutineFolder represents a folder that groups routines.
 type RoutineFolder struct {
-	ID        int       `json:"id"`         // The routine folder ID.
-	Index     int       `json:"index"`      // Index indicating the order of the routine folder.
-	Title     string    `json:"title"`      // The routine folder title.
-	UpdatedAt time.Time `json:"updated_at"` // ISO 8601 timestamp of when the routine folder was last updated.
-	CreatedAt time.Time `json:"created_at"` // ISO 8601 timestamp of when the routine folder was created.
+	ID        int       `json:"id"`
+	Index     int       `json:"index"`
+	Title     string    `json:"title"`
+	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
-type Event struct {
-	EventType EventType `json:"type"`       // The Type of Event
-	ID        uuid.UUID `json:"id"`         // When deleted, this references the workout that was removed
-	DeletedAt time.Time `json:"deleted_at"` // when the type is deleted, when it was removed
-	Workout   Workout   `json:"workout"`    // On an update, output the workout
-}
-
-type User struct {
-	ID   uuid.UUID `json:"id"`   // The user ID.
-	Name string    `json:"name"` // The user's name.
-	URL  string    `json:"url"`  // The user's profile URL.
-}
-
-type BodyMeasurement struct {
-	ID             int       `json:"id"`               // The body measurement ID.
-	Date           string    `json:"date"`             // The date of the measurement in ISO 8601 format (YYYY-MM-DD).
-	CreatedAt      time.Time `json:"created_at"`       // ISO 8601 timestamp of when the body measurement was created.
-	WeightKG       float64   `json:"weight_kg"`        // The weight measurement in kilograms.
-	WeightLB       float64   `json:"-"`                // The weight measurement in pounds (computed).
-	LeanMassKG     float64   `json:"lean_mass_kg"`     // The lean mass measurement
-	LeanMassLB     float64   `json:"-"`                // The lean mass measurement in pounds (computed).
-	FatPercent     float64   `json:"fat_percent"`      // The fat percentage measurement.
-	NeckCM         float64   `json:"neck_cm"`          // The neck measurement in centimeters.
-	NeckInches     float64   `json:"-"`                // The neck measurement in inches (computed).
-	ShoulderCM     float64   `json:"shoulder_cm"`      // The shoulder measurement in centimeters.
-	ShoulderIN     float64   `json:"-"`                // The shoulder measurement in inches (computed).
-	ChestCM        float64   `json:"chest_cm"`         // The chest measurement in centimeters.
-	ChestIn        float64   `json:"-"`                // The chest measurement in inches (computed).
-	LeftBicepCM    float64   `json:"left_bicep_cm"`    // The left bicep measurement in centimeters.
-	LeftBicepIN    float64   `json:"-"`                // The left bicep measurement in inches (computed).
-	RightBicepCM   float64   `json:"right_bicep_cm"`   // The right bicep measurement in centimeters.
-	RightBicepIN   float64   `json:"-"`                // The right bicep measurement in inches (computed).
-	LeftForearmCM  float64   `json:"left_forearm_cm"`  // The left forearm measurement in centimeters.
-	LeftForearmIN  float64   `json:"-"`                // The left forearm measurement in inches (computed).
-	RightForearmCM float64   `json:"right_forearm_cm"` // The right forearm measurement in centimeters.
-	RightForearmIN float64   `json:"-"`                // The right forearm measurement in inches (computed).
-	AbdomenCM      float64   `json:"abdomen"`          // The abdomen measurement in centimeters.
-	AbdomenIN      float64   `json:"-"`                // The abdomen measurement
-	WaistCM        float64   `json:"waist"`            // The waist measurement in centimeters.
-	WaistIN        float64   `json:"-"`                // The waist measurement in inches (computed).
-	HipsCM         float64   `json:"hips"`             // The hips measurement in centimeters.
-	HipsIN         float64   `json:"-"`                // The hips measurement in inches (computed).
-	LeftThighCM    float64   `json:"left_thigh"`       // The left thigh measurement in centimeters.
-	LeftThighIN    float64   `json:"-"`                // The left thigh measurement in inches (computed).
-	RightThighCM   float64   `json:"right_thigh"`      // The right thigh measurement in centimeters.
-	RightThighIN   float64   `json:"-"`                // The right thigh measurement in inches (computed).
-	LeftCalfCM     float64   `json:"left_calf"`        // The left calf measurement in centimeters.
-	LeftCalfIN     float64   `json:"-"`                // The left calf measurement in inches (computed).
-	RightCalfCM    float64   `json:"right_calf"`       // The right calf measurement in centimeters.
-	RightCalfIN    float64   `json:"-"`                // The right calf measurement in inches (computed).
-}
-
-// UnmarshalJSON unmarshals the given struct, and also computes the
-// following fields:
-// WeightLB
-// LeanMassLB
-// NeckInches
-// ShoulderIN
-// ChestIn
-// LeftBicepIN
-// RightBicepIN
-// LeftForearmIN
-// RightForearmIN
-// AbdomenIN
-// WaistIN
-// HipsIN
-// LeftThighIN
-// RightThighIN
-// LeftCalfIN
-// RightCalfIN
-func (bm *BodyMeasurement) UnmarshalJSON(b []byte) error {
-	type mask BodyMeasurement
-	var base mask
-
-	err := json.Unmarshal(b, &base)
-	if err != nil {
-		return err
-	}
-
-	bm.ID = base.ID
-	bm.Date = base.Date
-	bm.CreatedAt = base.CreatedAt
-	bm.WeightKG = base.WeightKG
-	bm.WeightLB = bm.WeightKG * 2.20462262185
-	bm.LeanMassKG = base.LeanMassKG
-	bm.LeanMassLB = bm.LeanMassKG * 2.20462262185
-	bm.FatPercent = base.FatPercent
-	bm.NeckCM = base.NeckCM
-	bm.NeckInches = bm.NeckCM * 0.3937007874
-	bm.ShoulderCM = base.ShoulderCM
-	bm.ShoulderIN = bm.ShoulderCM * 0.3937007874
-	bm.ChestCM = base.ChestCM
-	bm.ChestIn = bm.ChestCM * 0.3937007874
-	bm.LeftBicepCM = base.LeftBicepCM
-	bm.LeftBicepIN = bm.LeftBicepCM * 0.3937007874
-	bm.RightBicepCM = base.RightBicepCM
-	bm.RightBicepIN = bm.RightBicepCM * 0.3937007874
-	bm.LeftForearmCM = base.LeftForearmCM
-	bm.LeftForearmIN = bm.LeftForearmCM * 0.3937007874
-	bm.RightForearmCM = base.RightForearmCM
-	bm.RightForearmIN = bm.RightForearmCM * 0.3937007874
-	bm.AbdomenCM = base.AbdomenCM
-	bm.AbdomenIN = bm.AbdomenCM * 0.3937007874
-	bm.WaistCM = base.WaistCM
-	bm.WaistIN = bm.WaistCM * 0.3937007874
-	bm.HipsCM = base.HipsCM
-	bm.HipsIN = bm.HipsCM * 0.3937007874
-	bm.LeftThighCM = base.LeftThighCM
-	bm.LeftThighIN = bm.LeftThighCM * 0.3937007874
-	bm.RightThighCM = base.RightThighCM
-	bm.RightThighIN = bm.RightThighCM * 0.3937007874
-	bm.LeftCalfCM = base.LeftCalfCM
-	bm.LeftCalfIN = bm.LeftCalfCM * 0.3937007874
-	bm.RightCalfCM = base.RightCalfCM
-	bm.RightCalfIN = bm.RightCalfCM * 0.3937007874
-
-	return nil
-}
-
+// ExerciseTemplate represents a reusable exercise definition.
 type ExerciseTemplate struct {
-	ID                    string   `json:"id"`                      // The exercise template ID.
-	Title                 string   `json:"title"`                   // The exercise template title.
-	Type                  string   `json:"type"`                    // The exercise template type. Can be one of: "weight_reps", "weight_reps_distance", "weight_reps_duration", "reps", "reps_distance", "reps_duration", "distance", "distance_duration", "duration"
-	PrimaryMuscleGroup    string   `json:"primary_muscle_group"`    // The primary muscle group targeted by the exercise template. Can be one of: "abdominals", "abductors", "adductors", "biceps", "calves", "cardio", "delts", "forearms", "glutes", "hamstrings", "lats", "pectorals", "quads", "traps", "triceps", "unknown"
-	SecondaryMuscleGroups []string `json:"secondary_muscle_groups"` // The secondary muscle group targeted by the exercise template. Can be one of: "abdominals", "abductors", "adductors", "biceps", "calves", "cardio", "delts", "forearms", "glutes", "hamstrings", "lats", "pectorals", "quads", "traps", "triceps", "unknown"
-	IsCustom              bool     `json:"is_custom"`               // Whether the exercise template is a custom template created by the user.
+	ID                    string   `json:"id"`
+	Title                 string   `json:"title"`
+	Type                  string   `json:"type"`
+	PrimaryMuscleGroup    string   `json:"primary_muscle_group"`
+	SecondaryMuscleGroups []string `json:"secondary_muscle_groups"`
+	Equipment             string   `json:"equipment"`
+	IsCustom              bool     `json:"is_custom"`
+}
+
+// ExerciseHistoryEntry represents a single set entry from exercise history.
+type ExerciseHistoryEntry struct {
+	WorkoutID          string   `json:"workout_id"`
+	WorkoutTitle       string   `json:"workout_title"`
+	WorkoutStartTime   time.Time `json:"workout_start_time"`
+	WorkoutEndTime     time.Time `json:"workout_end_time"`
+	ExerciseTemplateID string   `json:"exercise_template_id"`
+	WeightKg           *float64 `json:"weight_kg"`
+	Reps               *int     `json:"reps"`
+	DistanceMeters     *int     `json:"distance_meters"`
+	DurationSeconds    *int     `json:"duration_seconds"`
+	RPE                *float64 `json:"rpe"`
+	CustomMetric       *float64 `json:"custom_metric"`
+	SetType            SetType  `json:"set_type"`
+}
+
+// BodyMeasurement represents a body measurement snapshot for a given date.
+type BodyMeasurement struct {
+	Date          string   `json:"date"`
+	WeightKg      *float64 `json:"weight_kg"`
+	LeanMassKg    *float64 `json:"lean_mass_kg"`
+	FatPercent    *float64 `json:"fat_percent"`
+	NeckCm        *float64 `json:"neck_cm"`
+	ShoulderCm    *float64 `json:"shoulder_cm"`
+	ChestCm       *float64 `json:"chest_cm"`
+	LeftBicepCm   *float64 `json:"left_bicep_cm"`
+	RightBicepCm  *float64 `json:"right_bicep_cm"`
+	LeftForearmCm *float64 `json:"left_forearm_cm"`
+	RightForearmCm *float64 `json:"right_forearm_cm"`
+	AbdomenCm     *float64 `json:"abdomen"`
+	WaistCm       *float64 `json:"waist"`
+	HipsCm        *float64 `json:"hips"`
+	LeftThighCm   *float64 `json:"left_thigh"`
+	RightThighCm  *float64 `json:"right_thigh"`
+	LeftCalfCm    *float64 `json:"left_calf"`
+	RightCalfCm   *float64 `json:"right_calf"`
+}
+
+// UserInfo contains basic information about the authenticated user.
+type UserInfo struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+// WorkoutEventType indicates whether a workout event is an update or deletion.
+type WorkoutEventType string
+
+const (
+	WorkoutEventUpdated WorkoutEventType = "updated"
+	WorkoutEventDeleted WorkoutEventType = "deleted"
+)
+
+// WorkoutEvent represents a single event from the workout events feed.
+// Check Type to determine whether Workout or DeletedAt/DeletedID is populated.
+type WorkoutEvent struct {
+	Type      WorkoutEventType `json:"type"`
+	// Populated when Type == WorkoutEventUpdated.
+	Workout   *Workout         `json:"workout,omitempty"`
+	// Populated when Type == WorkoutEventDeleted.
+	ID        string           `json:"id,omitempty"`
+	DeletedAt *time.Time       `json:"deleted_at,omitempty"`
+}
+
+// --- Paginated response types ---
+
+// PaginatedWorkouts is the response from GET /v1/workouts.
+type PaginatedWorkouts struct {
+	Page       int       `json:"page"`
+	PageCount  int       `json:"page_count"`
+	Workouts   []Workout `json:"workouts"`
+}
+
+// WorkoutCount is the response from GET /v1/workouts/count.
+type WorkoutCount struct {
+	WorkoutCount int `json:"workout_count"`
+}
+
+// PaginatedWorkoutEvents is the response from GET /v1/workouts/events.
+type PaginatedWorkoutEvents struct {
+	Page      int            `json:"page"`
+	PageCount int            `json:"page_count"`
+	Events    []WorkoutEvent `json:"events"`
+}
+
+// PaginatedRoutines is the response from GET /v1/routines.
+type PaginatedRoutines struct {
+	Page      int       `json:"page"`
+	PageCount int       `json:"page_count"`
+	Routines  []Routine `json:"routines"`
+}
+
+// PaginatedRoutineFolders is the response from GET /v1/routine_folders.
+type PaginatedRoutineFolders struct {
+	Page           int             `json:"page"`
+	PageCount      int             `json:"page_count"`
+	RoutineFolders []RoutineFolder `json:"routine_folders"`
+}
+
+// PaginatedExerciseTemplates is the response from GET /v1/exercise_templates.
+type PaginatedExerciseTemplates struct {
+	Page              int                `json:"page"`
+	PageCount         int                `json:"page_count"`
+	ExerciseTemplates []ExerciseTemplate `json:"exercise_templates"`
+}
+
+// ExerciseHistory is the response from GET /v1/exercise_history/{exerciseTemplateId}.
+type ExerciseHistory struct {
+	ExerciseHistory []ExerciseHistoryEntry `json:"exercise_history"`
+}
+
+// PaginatedBodyMeasurements is the response from GET /v1/body_measurements.
+type PaginatedBodyMeasurements struct {
+	Page             int               `json:"page"`
+	PageCount        int               `json:"page_count"`
+	Measurements     []BodyMeasurement `json:"body_measurements"`
+}
+
+// --- Request body types ---
+
+// WorkoutSetInput is a set as sent in create/update workout requests.
+type WorkoutSetInput struct {
+	Type            SetType  `json:"type"`
+	WeightKg        *float64 `json:"weight_kg,omitempty"`
+	Reps            *int     `json:"reps,omitempty"`
+	DistanceMeters  *int     `json:"distance_meters,omitempty"`
+	DurationSeconds *int     `json:"duration_seconds,omitempty"`
+	CustomMetric    *float64 `json:"custom_metric,omitempty"`
+	RPE             *float64 `json:"rpe,omitempty"`
+}
+
+// WorkoutExerciseInput is an exercise as sent in create/update workout requests.
+type WorkoutExerciseInput struct {
+	ExerciseTemplateID string            `json:"exercise_template_id"`
+	SupersetID         *int              `json:"superset_id,omitempty"`
+	Notes              *string           `json:"notes,omitempty"`
+	Sets               []WorkoutSetInput `json:"sets"`
+}
+
+// WorkoutInput is the workout payload for create/update requests.
+type WorkoutInput struct {
+	Title       string                 `json:"title"`
+	Description *string                `json:"description,omitempty"`
+	StartTime   time.Time              `json:"start_time"`
+	EndTime     time.Time              `json:"end_time"`
+	IsPrivate   *bool                  `json:"is_private,omitempty"`
+	Exercises   []WorkoutExerciseInput `json:"exercises"`
+}
+
+// RoutineSetInput is a set as sent in create/update routine requests.
+type RoutineSetInput struct {
+	Type            SetType   `json:"type"`
+	WeightKg        *float64  `json:"weight_kg,omitempty"`
+	Reps            *int      `json:"reps,omitempty"`
+	DistanceMeters  *int      `json:"distance_meters,omitempty"`
+	DurationSeconds *int      `json:"duration_seconds,omitempty"`
+	CustomMetric    *float64  `json:"custom_metric,omitempty"`
+	RepRange        *RepRange `json:"rep_range,omitempty"`
+}
+
+// RoutineExerciseInput is an exercise as sent in create/update routine requests.
+type RoutineExerciseInput struct {
+	ExerciseTemplateID string            `json:"exercise_template_id"`
+	SupersetID         *int              `json:"superset_id,omitempty"`
+	RestSeconds        *int              `json:"rest_seconds,omitempty"`
+	Notes              *string           `json:"notes,omitempty"`
+	Sets               []RoutineSetInput `json:"sets"`
+}
+
+// RoutineInput is the routine payload for create/update requests.
+type RoutineInput struct {
+	Title     string                 `json:"title"`
+	FolderID  *float64               `json:"folder_id,omitempty"`
+	Notes     string                 `json:"notes"`
+	Exercises []RoutineExerciseInput `json:"exercises"`
+}
+
+// RoutineUpdateInput is the payload for PUT /v1/routines/{routineId}.
+// Notes is optional (unlike create).
+type RoutineUpdateInput struct {
+	Title     string                 `json:"title"`
+	FolderID  *float64               `json:"folder_id,omitempty"`
+	Notes     *string                `json:"notes,omitempty"`
+	Exercises []RoutineExerciseInput `json:"exercises"`
+}
+
+// CreateExerciseInput is the payload for POST /v1/exercise_templates.
+type CreateExerciseInput struct {
+	Title             string             `json:"title"`
+	ExerciseType      CustomExerciseType `json:"exercise_type"`
+	EquipmentCategory EquipmentCategory  `json:"equipment_category"`
+	MuscleGroup       MuscleGroup        `json:"muscle_group"`
+	OtherMuscles      []MuscleGroup      `json:"other_muscles,omitempty"`
+}
+
+// BodyMeasurementUpdate is the payload for PUT /v1/body_measurements/{date}.
+// All fields are optional; omitted fields will be set to null by the API.
+type BodyMeasurementUpdate struct {
+	WeightKg       *float64 `json:"weight_kg"`
+	LeanMassKg     *float64 `json:"lean_mass_kg"`
+	FatPercent     *float64 `json:"fat_percent"`
+	NeckCm         *float64 `json:"neck_cm"`
+	ShoulderCm     *float64 `json:"shoulder_cm"`
+	ChestCm        *float64 `json:"chest_cm"`
+	LeftBicepCm    *float64 `json:"left_bicep_cm"`
+	RightBicepCm   *float64 `json:"right_bicep_cm"`
+	LeftForearmCm  *float64 `json:"left_forearm_cm"`
+	RightForearmCm *float64 `json:"right_forearm_cm"`
+	AbdomenCm      *float64 `json:"abdomen"`
+	WaistCm        *float64 `json:"waist"`
+	HipsCm         *float64 `json:"hips"`
+	LeftThighCm    *float64 `json:"left_thigh"`
+	RightThighCm   *float64 `json:"right_thigh"`
+	LeftCalfCm     *float64 `json:"left_calf"`
+	RightCalfCm    *float64 `json:"right_calf"`
 }

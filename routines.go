@@ -1,103 +1,69 @@
 package hevy
 
 import (
-	"fmt"
-
-	"github.com/google/uuid"
+	"context"
+	"errors"
 )
 
-// A response for fetching a list of workouts
-type routineResponse struct {
-	paginatedResults
-	Routines []Routine `json:"routines"`
-}
+// RoutinesService handles routine endpoints.
+type RoutinesService struct{ c *core }
 
-// Routines returns an iterator that yields routines one by one.
-// If an error occurs fetching a page, it is yielded as the second value and iteration stops.
-func (c Client) Routines() func(func(Routine, error) bool) {
-	size := 10
-	return func(yield func(Routine, error) bool) {
-		page := 1
-
-		for {
-			resp, next, err := c.GetRoutines(page, size)
-			if err != nil {
-				yield(Routine{}, err)
-				return
-			}
-
-			for _, routine := range resp {
-				if !yield(routine, nil) {
-					return
-				}
-			}
-
-			if next == 0 {
-				break
-			}
-			page++
-		}
+// List returns one page of routines. page is 1-based; pageSize max is 10.
+// Returns ErrNoMorePages when page exceeds the total page count.
+func (s *RoutinesService) List(ctx context.Context, page, pageSize int) (*PaginatedRoutines, error) {
+	if err := validatePageSize(pageSize, 10); err != nil {
+		return nil, err
 	}
+	var out PaginatedRoutines
+	if err := s.c.get(ctx, "/v1/routines", pageQuery(page, pageSize), &out); err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNoMorePages
+		}
+		return nil, err
+	}
+	if page > out.PageCount && out.PageCount > 0 {
+		return nil, ErrNoMorePages
+	}
+	return &out, nil
 }
 
-func (c Client) AllRoutines() ([]Routine, error) {
-	routines := []Routine{}
-
-	page := 1
-	size := 10
-
-	for {
-		resp, next, err := c.GetRoutines(page, size)
+// ListAll fetches every page and returns all routines in a single slice.
+func (s *RoutinesService) ListAll(ctx context.Context) ([]Routine, error) {
+	return listAll(ctx, func(ctx context.Context, page int) ([]Routine, int, error) {
+		p, err := s.List(ctx, page, 10)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
-
-		routines = append(routines, resp...)
-
-		if next == 0 {
-			break
-		}
-		page = next
-	}
-
-	return routines, nil
+		return p.Routines, p.PageCount, nil
+	})
 }
 
-// Routines gets all routines.
-func (c Client) GetRoutines(page int, size int) ([]Routine, int, error) {
-	if size > 10 {
-		size = 10
+// Get returns a single routine by ID.
+func (s *RoutinesService) Get(ctx context.Context, routineID string) (*Routine, error) {
+	var out struct {
+		Routine Routine `json:"routine"`
 	}
-
-	q := map[string]string{
-		"page":     fmt.Sprintf("%d", page),
-		"pageSize": fmt.Sprintf("%d", size),
+	if err := s.c.get(ctx, "/v1/routines/"+routineID, nil, &out); err != nil {
+		return nil, err
 	}
-	url := c.constructURL("routines", q)
-	result := routineResponse{}
-	err := c.get(url, &result)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	next := result.Page + 1
-	if result.Page >= result.PageCount {
-		next = 0
-	}
-
-	return result.Routines, next, nil
+	return &out.Routine, nil
 }
 
-func (c Client) Routine(id uuid.UUID) (Routine, error) {
-	path := fmt.Sprintf("routines/%s", id.String())
-	url := c.constructURL(path, map[string]string{})
-
-	result := Routine{}
-
-	err := c.get(url, &result)
-	if err != nil {
-		return Routine{}, err
+// Create creates a new routine and returns it.
+// Returns ErrRoutineLimitExceeded if the account routine limit is reached.
+func (s *RoutinesService) Create(ctx context.Context, routine RoutineInput) (*Routine, error) {
+	var out Routine
+	if err := s.c.post(ctx, "/v1/routines", map[string]any{"routine": routine}, &out); err != nil {
+		return nil, err
 	}
+	return &out, nil
+}
 
-	return result, nil
+// Update updates an existing routine and returns the updated version.
+func (s *RoutinesService) Update(ctx context.Context, routineID string, routine RoutineUpdateInput) (*Routine, error) {
+	var out Routine
+	if err := s.c.put(ctx, "/v1/routines/"+routineID, map[string]any{"routine": routine}, &out); err != nil {
+		return nil, err
+	}
+	return &out, nil
 }

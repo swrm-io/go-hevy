@@ -1,29 +1,33 @@
-package hevy
+package hevy_test
 
 import (
-	"net/http"
-	"net/http/httptest"
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/swrm-io/go-hevy"
 )
 
-func TestTransport(t *testing.T) {
-	testServer := httptest.NewServer(http.HandlerFunc(func(_ http.ResponseWriter, req *http.Request) {
-		userAgent := req.Header.Get("User-Agent")
-		assert.Equal(t, "go-hevy (https://github.com/swrm-io/go-hevy)", userAgent)
+func TestAPIErrorDetails(t *testing.T) {
+	_, client := newErrorServer(t, 400)
+	_, err := client.Workouts.Get(context.Background(), "bad-id")
+	require.Error(t, err)
 
-		apiKey := req.Header.Get("api-key")
-		assert.Equal(t, "my-fake-api-key", apiKey)
-	}))
-	defer testServer.Close()
+	var apiErr *hevy.APIError
+	require.ErrorAs(t, err, &apiErr)
+	assert.Equal(t, 400, apiErr.StatusCode)
+	assert.ErrorIs(t, err, hevy.ErrBadRequest)
+}
 
-	client := NewClient("my-fake-api-key")
+func TestAPIErrorUnwrap(t *testing.T) {
+	_, client := newErrorServer(t, 401)
+	_, err := client.User.Info(context.Background())
+	assert.ErrorIs(t, err, hevy.ErrUnauthorized)
 
-	client.APIURL = testServer.URL
-	url := client.constructURL("fake/url", map[string]string{})
-	resp, err := client.client.Get(url)
-	assert.NoError(t, err)
-	defer resp.Body.Close()
-
+	var apiErr *hevy.APIError
+	require.ErrorAs(t, err, &apiErr)
+	assert.Equal(t, 401, apiErr.StatusCode)
+	assert.True(t, errors.Is(apiErr, hevy.ErrUnauthorized))
 }
