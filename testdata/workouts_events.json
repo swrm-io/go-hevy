@@ -1,0 +1,73 @@
+{
+    "page": 1,
+    "page_count": 2,
+    "events": [
+        {
+            "type": "updated",
+            "workout": {
+                "id": "5c079430-4d04-4507-9718-e60310665dee",
+                "title": "Full Body 3",
+                "routine_id": "c6425b18-2c45-422a-99bc-9d6dd0ae5985",
+                "description": "",
+                "start_time": "2026-05-10T19:14:51+00:00",
+                "end_time": "2026-05-10T20:09:45+00:00",
+                "updated_at": "2026-05-10T20:09:48.974Z",
+                "created_at": "2026-05-10T20:09:48.974Z",
+                "exercises": [
+                    {
+                        "index": 0,
+                        "title": "Seated Leg Curl (Machine)",
+                        "notes": "",
+                        "exercise_template_id": "11A123F3",
+                        "superset_id": null,
+                        "sets": [
+                            {"index": 0, "type": "warmup", "weight_kg": 45.35929094356398, "reps": 12, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 1, "type": "normal", "weight_kg": 68.03893641534596, "reps": 15, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 2, "type": "normal", "weight_kg": 68.03893641534596, "reps": 15, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 3, "type": "normal", "weight_kg": 68.03893641534596, "reps": 15, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null}
+                        ]
+                    },
+                    {
+                        "index": 1,
+                        "title": "Incline Bench Press (Dumbbell)",
+                        "notes": "",
+                        "exercise_template_id": "07B38369",
+                        "superset_id": null,
+                        "sets": [
+                            {"index": 0, "type": "warmup", "weight_kg": 27.215574566138386, "reps": 12, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 1, "type": "normal", "weight_kg": 45.35929094356398, "reps": 9, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 2, "type": "normal", "weight_kg": 45.35929094356398, "reps": 9, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 3, "type": "normal", "weight_kg": 45.35929094356398, "reps": 9, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null}
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "type": "updated",
+            "workout": {
+                "id": "3fce10d8-6731-4f4a-8098-454841912c30",
+                "title": "Full Body 2",
+                "routine_id": "e6b4e570-e25e-484c-9b3e-e95142a2875b",
+                "description": "",
+                "start_time": "2026-05-07T15:08:11+00:00",
+                "end_time": "2026-05-07T15:46:15+00:00",
+                "updated_at": "2026-05-07T18:11:25.716Z",
+                "created_at": "2026-05-07T15:46:18.394Z",
+                "exercises": [
+                    {
+                        "index": 0,
+                        "title": "Bent Over Row (Barbell)",
+                        "notes": "",
+                        "exercise_template_id": "55E6546F",
+                        "superset_id": null,
+                        "sets": [
+                            {"index": 0, "type": "warmup", "weight_kg": 20.41168092460379, "reps": 12, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null},
+                            {"index": 1, "type": "normal", "weight_kg": 70.30690096252415, "reps": 12, "distance_meters": null, "duration_seconds": null, "rpe": null, "custom_metric": null}
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

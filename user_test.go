@@ -1,34 +1,18 @@
 package hevy_test
 
 import (
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/swrm-io/go-hevy"
+	"github.com/stretchr/testify/require"
 )
 
-func TestUser(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		switch req.URL.Path {
-		case "/v1/user":
-			data, err := os.ReadFile("testdata/responses/user/info.json")
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		}
-	}))
-	defer srv.Close()
-
-	client := hevy.NewClient("my-fake-api-key")
-	client.APIURL = srv.URL
-
-	user, err := client.User()
-	assert.NoError(t, err)
-	assert.NotEmpty(t, user)
-	assert.Equal(t, "d2670e5a-951c-4911-9d12-43e6eff605b1", user.ID.String())
+func TestUserInfo(t *testing.T) {
+	client := newTestServer(t, "/v1/user/info", "user_info.json")
+	user, err := client.User.Info(context.Background())
+	require.NoError(t, err)
 	assert.Equal(t, "khabiaz", user.Name)
+	assert.Equal(t, "d2670e5a-951c-4911-9d12-43e6eff605b1", user.ID)
 	assert.Equal(t, "https://hevy.com/user/khabiaz", user.URL)
 }

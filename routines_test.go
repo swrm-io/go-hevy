@@ -1,88 +1,59 @@
 package hevy_test
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"context"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/swrm-io/go-hevy"
 )
 
-func TestRoutinePagination(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		page := req.URL.Query().Get("page")
+func TestRoutinesList(t *testing.T) {
+	client := newTestServer(t, "/v1/routines", "routines_list.json")
+	page, err := client.Routines.List(context.Background(), 1, 2)
+	require.NoError(t, err)
+	assert.Equal(t, 18, page.PageCount)
+	require.Len(t, page.Routines, 2)
 
-		file := fmt.Sprintf("testdata/responses/routine/routine-%s.json", page)
-		data, err := os.ReadFile(file)
-		assert.NoError(t, err)
-		_, err = res.Write(data)
-		assert.NoError(t, err)
-	}))
-	defer srv.Close()
+	routine := page.Routines[0]
+	assert.Equal(t, "Week 5 to 8 - Day 3", routine.Title)
+	require.NotNil(t, routine.FolderID)
+	assert.Equal(t, float64(687389), *routine.FolderID)
+	assert.Equal(t, 180, routine.Exercises[0].RestSeconds)
 
-	client := hevy.NewClient("my-fake-api-key")
-	client.APIURL = srv.URL
-
-	routines := []hevy.Routine{}
-	pager := client.Routines()
-	for x, err := range pager {
-		assert.NoError(t, err)
-		routines = append(routines, x)
-	}
-
-	assert.NotEmpty(t, routines)
-
-	assert.Len(t, routines, 3)
+	ex1 := routine.Exercises[1]
+	require.NotNil(t, ex1.SupersetID)
+	assert.Equal(t, 1, *ex1.SupersetID)
 }
-func TestRoutine(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		switch req.URL.Path {
-		case "/v1/routines":
-			page := req.URL.Query().Get("page")
 
-			file := fmt.Sprintf("testdata/responses/routine/routine-%s.json", page)
-			data, err := os.ReadFile(file)
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		case "/v1/routines/9c3e6a25-67e9-4c0c-860c-286e13fe9924":
-			data, err := os.ReadFile("testdata/responses/routine/single-routine.json")
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		}
-	}))
-	defer srv.Close()
+func TestRoutinesGet(t *testing.T) {
+	const id = "0d299174-8660-4b10-918b-e39722d76a13"
+	client := newTestServer(t, "/v1/routines/"+id, "routine_get.json")
+	routine, err := client.Routines.Get(context.Background(), id)
+	require.NoError(t, err)
+	assert.Equal(t, id, routine.ID)
+	assert.Equal(t, "Week 5 to 8 - Day 3", routine.Title)
+	require.NotNil(t, routine.FolderID)
+	assert.Equal(t, float64(687389), *routine.FolderID)
+	require.Len(t, routine.Exercises, 3)
+	assert.Equal(t, "Squat (Barbell)", routine.Exercises[0].Title)
+	assert.Equal(t, 180, routine.Exercises[0].RestSeconds)
+	assert.Nil(t, routine.Exercises[0].SupersetID)
+}
 
-	client := hevy.NewClient("my-fake-api-key")
-	client.APIURL = srv.URL
+func TestRoutinesListInvalidPageSize(t *testing.T) {
+	client := newTestServer(t, "/v1/routines", "routines_list.json")
+	_, err := client.Routines.List(context.Background(), 1, 11)
+	assert.ErrorIs(t, err, hevy.ErrInvalidPageSize)
+}
 
-	t.Run("Test All Routines", func(t *testing.T) {
-		routines, err := client.AllRoutines()
-		assert.NoError(t, err)
-		assert.NotEmpty(t, routines)
-		assert.Len(t, routines, 3)
+func TestRoutinesLimitExceeded(t *testing.T) {
+	client := newErrorServer(t, 403)
+	_, err := client.Routines.Create(context.Background(), hevy.RoutineInput{
+		Title:     "Test",
+		Notes:     "test",
+		Exercises: nil,
 	})
-
-	t.Run("Test Paginated Routines", func(t *testing.T) {
-		routines, next, err := client.GetRoutines(2, 1)
-		assert.Equal(t, 3, next)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, routines)
-		assert.Len(t, routines, 1)
-	})
-
-	t.Run("Test Single Routine", func(t *testing.T) {
-		routineID, err := uuid.Parse("9c3e6a25-67e9-4c0c-860c-286e13fe9924")
-		assert.NoError(t, err)
-
-		routine, err := client.Routine(routineID)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, routine)
-		assert.Equal(t, "9c3e6a25-67e9-4c0c-860c-286e13fe9924", routine.ID.String())
-	})
+	assert.ErrorIs(t, err, hevy.ErrRoutineLimitExceeded)
 }

@@ -1,0 +1,59 @@
+{
+    "page": 1,
+    "page_count": 18,
+    "routines": [
+        {
+            "id": "0d299174-8660-4b10-918b-e39722d76a13",
+            "title": "Week 5 to 8 - Day 3",
+            "folder_id": 687389,
+            "updated_at": "2025-03-25T04:52:34.427Z",
+            "created_at": "2025-03-01T05:43:25.269Z",
+            "exercises": [
+                {
+                    "index": 0,
+                    "title": "Squat (Barbell)",
+                    "notes": "REPS: 5\nRPE: 8",
+                    "exercise_template_id": "D04AC939",
+                    "superset_id": null,
+                    "rest_seconds": 180,
+                    "sets": [
+                        {"index": 0, "type": "warmup", "weight_kg": 20.41168092460379, "reps": 10, "distance_meters": null, "duration_seconds": null, "custom_metric": null},
+                        {"index": 1, "type": "normal", "weight_kg": 95.25451098148434, "reps": 8, "distance_meters": null, "duration_seconds": null, "custom_metric": null}
+                    ]
+                },
+                {
+                    "index": 1,
+                    "title": "Dumbbell Row",
+                    "notes": "REPS: 12\nRPE: 8",
+                    "exercise_template_id": "F1E57334",
+                    "superset_id": 1,
+                    "rest_seconds": 120,
+                    "sets": [
+                        {"index": 0, "type": "normal", "weight_kg": 36.28743275485118, "reps": 12, "distance_meters": null, "duration_seconds": null, "custom_metric": null}
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "9e763181-d95b-4321-9a33-602d1f5e1a6e",
+            "title": "Week 5 to 8 - Day 2",
+            "folder_id": 687389,
+            "updated_at": "2025-03-25T04:52:34.423Z",
+            "created_at": "2025-02-27T06:07:17.189Z",
+            "exercises": [
+                {
+                    "index": 0,
+                    "title": "Deadlift (Barbell)",
+                    "notes": "REPS: 3\nRPE: 8",
+                    "exercise_template_id": "C6272009",
+                    "superset_id": null,
+                    "rest_seconds": 180,
+                    "sets": [
+                        {"index": 0, "type": "warmup", "weight_kg": 43.091326396385774, "reps": 10, "distance_meters": null, "duration_seconds": null, "custom_metric": null},
+                        {"index": 1, "type": "normal", "weight_kg": 108.86229826455354, "reps": 3, "distance_meters": null, "duration_seconds": null, "custom_metric": null}
+                    ]
+                }
+            ]
+        }
+    ]
+}

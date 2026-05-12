@@ -1,147 +1,92 @@
 package hevy_test
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"os"
+	"context"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/swrm-io/go-hevy"
 )
 
-func TestWorkoutPagination(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		page := req.URL.Query().Get("page")
+func TestWorkoutsList(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts", "workouts_list.json")
+	page, err := client.Workouts.List(context.Background(), 1, 2)
+	require.NoError(t, err)
+	assert.Equal(t, 1, page.Page)
+	assert.Equal(t, 109, page.PageCount)
+	require.Len(t, page.Workouts, 2)
 
-		file := fmt.Sprintf("testdata/responses/workout/workout-%s.json", page)
-		data, err := os.ReadFile(file)
-		assert.NoError(t, err)
-		_, err = res.Write(data)
-		assert.NoError(t, err)
-	}))
-	defer srv.Close()
+	workout := page.Workouts[0]
+	assert.Equal(t, "5c079430-4d04-4507-9718-e60310665dee", workout.ID)
+	assert.Equal(t, "Full Body 3", workout.Title)
+	require.Len(t, workout.Exercises, 2)
+	assert.Nil(t, workout.Exercises[0].SupersetID)
 
-	client := hevy.NewClient("my-fake-api-key")
-	client.APIURL = srv.URL
-
-	workouts := []hevy.Workout{}
-	pager := client.Workouts()
-	for x, err := range pager {
-		assert.NoError(t, err)
-		workouts = append(workouts, x)
-	}
-
-	assert.NotEmpty(t, workouts)
-
-	assert.Len(t, workouts, 6)
+	set0 := workout.Exercises[0].Sets[0]
+	assert.Equal(t, hevy.SetTypeWarmup, set0.Type)
+	require.NotNil(t, set0.WeightKg)
+	assert.Equal(t, 45.35929094356398, *set0.WeightKg)
 }
-func TestWorkout(t *testing.T) {
-	srv := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-		switch req.URL.Path {
-		case "/v1/workouts":
-			page := req.URL.Query().Get("page")
 
-			file := fmt.Sprintf("testdata/responses/workout/workout-%s.json", page)
-			data, err := os.ReadFile(file)
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		case "/v1/workouts/count":
-			data, err := os.ReadFile("testdata/responses/workout/workout-count.json")
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		case "/v1/workouts/b459cba5-cd6d-463c-abd6-54f8eafcadcb":
-			data, err := os.ReadFile("testdata/responses/workout/single-workout.json")
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		case "/v1/workouts/events":
-			page := req.URL.Query().Get("page")
+func TestWorkoutsGet(t *testing.T) {
+	const id = "5c079430-4d04-4507-9718-e60310665dee"
+	client := newTestServer(t, "/v1/workouts/"+id, "workout_get.json")
+	workout, err := client.Workouts.Get(context.Background(), id)
+	require.NoError(t, err)
+	assert.Equal(t, id, workout.ID)
+	assert.Equal(t, "Full Body 3", workout.Title)
+	assert.Equal(t, "c6425b18-2c45-422a-99bc-9d6dd0ae5985", workout.RoutineID)
+	require.Len(t, workout.Exercises, 5)
 
-			file := fmt.Sprintf("testdata/responses/workout/workout_event-%s.json", page)
-			data, err := os.ReadFile(file)
-			assert.NoError(t, err)
-			_, err = res.Write(data)
-			assert.NoError(t, err)
-		}
-	}))
-	defer srv.Close()
+	set0 := workout.Exercises[0].Sets[0]
+	assert.Equal(t, hevy.SetTypeWarmup, set0.Type)
+	require.NotNil(t, set0.Reps)
+	assert.Equal(t, 12, *set0.Reps)
+}
 
-	client := hevy.NewClient("my-fake-api-key")
-	client.APIURL = srv.URL
+func TestWorkoutsCount(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts/count", "workouts_count.json")
+	count, err := client.Workouts.Count(context.Background())
+	require.NoError(t, err)
+	assert.Equal(t, 218, count)
+}
 
-	t.Run("Test All Workouts", func(t *testing.T) {
-		workouts, err := client.AllWorkouts()
-		for i := range workouts {
-			t.Log(workouts[i].ID)
-		}
-		assert.NoError(t, err)
-		assert.NotEmpty(t, workouts)
-		assert.Len(t, workouts, 6)
-	})
+func TestWorkoutsEvents(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts/events", "workouts_events.json")
+	page, err := client.Workouts.Events(context.Background(), 1, 2, nil)
+	require.NoError(t, err)
+	assert.Equal(t, 1, page.Page)
+	assert.Equal(t, 2, page.PageCount)
+	require.Len(t, page.Events, 2)
 
-	t.Run("Test Get Workouts", func(t *testing.T) {
-		workouts, next, err := client.GetWorkouts(2, 2)
-		assert.Equal(t, 3, next)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, workouts)
-		assert.Len(t, workouts, 2)
-	})
+	event := page.Events[0]
+	assert.Equal(t, hevy.WorkoutEventUpdated, event.Type)
+	require.NotNil(t, event.Workout)
+	assert.Equal(t, "5c079430-4d04-4507-9718-e60310665dee", event.Workout.ID)
+	assert.Equal(t, "Full Body 3", event.Workout.Title)
+}
 
-	t.Run("Test Workout Count", func(t *testing.T) {
-		count, err := client.WorkoutCount()
+func TestWorkoutsListInvalidPageSize(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts", "workouts_list.json")
+	_, err := client.Workouts.List(context.Background(), 1, 99)
+	assert.ErrorIs(t, err, hevy.ErrInvalidPageSize)
+}
 
-		assert.NoError(t, err)
-		assert.Equal(t, 21, count)
-	})
+func TestWorkoutsListNoMorePages(t *testing.T) {
+	client := newErrorServer(t, 404)
+	_, err := client.Workouts.List(context.Background(), 999, 10)
+	assert.ErrorIs(t, err, hevy.ErrNoMorePages)
+}
 
-	t.Run("Test Single Workout", func(t *testing.T) {
-		workoutID, err := uuid.Parse("b459cba5-cd6d-463c-abd6-54f8eafcadcb")
+func TestWorkoutsGetNotFound(t *testing.T) {
+	client := newErrorServer(t, 404)
+	_, err := client.Workouts.Get(context.Background(), "nonexistent")
+	assert.ErrorIs(t, err, hevy.ErrNotFound)
+}
 
-		assert.NoError(t, err)
-		workout, err := client.Workout(workoutID)
-		assert.NoError(t, err)
-		assert.NotEmpty(t, workout)
-		assert.Equal(t, workoutID, workout.ID)
-		assert.Equal(t, "Morning Workout 💪", workout.Title)
-	})
-
-	t.Run("Test Workout Events", func(t *testing.T) {
-		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		events := []hevy.Event{}
-		iterator := client.WorkoutEvents(since)
-		for e, err := range iterator {
-			assert.NoError(t, err)
-			events = append(events, e)
-		}
-
-		assert.NotEmpty(t, events)
-		assert.Len(t, events, 3)
-	})
-
-	t.Run("Test Get Workout Events", func(t *testing.T) {
-		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		events, next, err := client.GetWorkoutEvents(1, 1, since)
-
-		assert.NoError(t, err)
-		assert.NotEmpty(t, events)
-		assert.Len(t, events, 1)
-		assert.Equal(t, 2, next)
-	})
-
-	t.Run("Test Get All Workouts", func(t *testing.T) {
-		since := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
-		events := []hevy.Event{}
-		allEvents, err := client.AllWorkoutEvents(since)
-		assert.NoError(t, err)
-		events = append(events, allEvents...)
-
-		assert.NotEmpty(t, events)
-		assert.Len(t, events, 3)
-	})
+func TestWorkoutsUnauthorized(t *testing.T) {
+	client := newErrorServer(t, 401)
+	_, err := client.Workouts.Count(context.Background())
+	assert.ErrorIs(t, err, hevy.ErrUnauthorized)
 }
