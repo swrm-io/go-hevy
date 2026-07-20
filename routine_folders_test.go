@@ -33,3 +33,12 @@ func TestRoutineFoldersListInvalidPageSize(t *testing.T) {
 	_, err := client.RoutineFolders.List(context.Background(), 1, 11)
 	assert.ErrorIs(t, err, hevy.ErrInvalidPageSize)
 }
+
+func TestRoutineFoldersCreate(t *testing.T) {
+	client := newTestServer(t, "/v1/routine_folders", "routine_folder_create.json")
+	f, err := client.RoutineFolders.Create(context.Background(), "Claude Debug Probe 2")
+	require.NoError(t, err)
+	assert.Equal(t, 3262645, f.ID)
+	assert.Equal(t, "Claude Debug Probe 2", f.Title)
+	assert.False(t, f.CreatedAt.IsZero())
+}

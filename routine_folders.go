@@ -51,9 +51,11 @@ func (s *RoutineFoldersService) Get(ctx context.Context, folderID int) (*Routine
 // Create creates a new routine folder with the given title.
 func (s *RoutineFoldersService) Create(ctx context.Context, title string) (*RoutineFolder, error) {
 	body := map[string]any{"routine_folder": map[string]string{"title": title}}
-	var out RoutineFolder
+	var out struct {
+		RoutineFolder RoutineFolder `json:"routine_folder"`
+	}
 	if err := s.c.post(ctx, "/v1/routine_folders", body, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	return &out.RoutineFolder, nil
 }

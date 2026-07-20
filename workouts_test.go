@@ -90,3 +90,30 @@ func TestWorkoutsUnauthorized(t *testing.T) {
 	_, err := client.Workouts.Count(context.Background())
 	assert.ErrorIs(t, err, hevy.ErrUnauthorized)
 }
+
+func TestWorkoutsCreate(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts", "workout_create.json")
+	workout, err := client.Workouts.Create(context.Background(), hevy.WorkoutInput{
+		Title: "Claude Debug Workout Probe 2 (delete me)",
+		Exercises: []hevy.WorkoutExerciseInput{
+			{ExerciseTemplateID: "3601968B", Sets: []hevy.WorkoutSetInput{{Type: hevy.SetTypeNormal}}},
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "25b152a1-21e6-4600-ae44-df8a0e151851", workout.ID)
+	assert.Equal(t, "Claude Debug Workout Probe 2 (delete me)", workout.Title)
+	require.Len(t, workout.Exercises, 1)
+}
+
+func TestWorkoutsUpdate(t *testing.T) {
+	client := newTestServer(t, "/v1/workouts/25b152a1-21e6-4600-ae44-df8a0e151851", "workout_create.json")
+	workout, err := client.Workouts.Update(context.Background(), "25b152a1-21e6-4600-ae44-df8a0e151851", hevy.WorkoutInput{
+		Title: "Claude Debug Workout Probe 2 (delete me)",
+		Exercises: []hevy.WorkoutExerciseInput{
+			{ExerciseTemplateID: "3601968B", Sets: []hevy.WorkoutSetInput{{Type: hevy.SetTypeNormal}}},
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "25b152a1-21e6-4600-ae44-df8a0e151851", workout.ID)
+	require.Len(t, workout.Exercises, 1)
+}

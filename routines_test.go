@@ -57,3 +57,34 @@ func TestRoutinesLimitExceeded(t *testing.T) {
 	})
 	assert.ErrorIs(t, err, hevy.ErrRoutineLimitExceeded)
 }
+
+func TestRoutinesCreate(t *testing.T) {
+	client := newTestServer(t, "/v1/routines", "routine_create.json")
+	routine, err := client.Routines.Create(context.Background(), hevy.RoutineInput{
+		Title: "Claude Debug Routine Probe",
+		Notes: "",
+		Exercises: []hevy.RoutineExerciseInput{
+			{ExerciseTemplateID: "3601968B", Sets: []hevy.RoutineSetInput{{Type: hevy.SetTypeNormal}}},
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "80155158-4a80-478d-bdeb-1070b57e5c7e", routine.ID)
+	assert.Equal(t, "Claude Debug Routine Probe", routine.Title)
+	require.NotNil(t, routine.FolderID)
+	assert.Equal(t, float64(3262643), *routine.FolderID)
+	require.Len(t, routine.Exercises, 1)
+	assert.Equal(t, "Bench Press (Dumbbell)", routine.Exercises[0].Title)
+}
+
+func TestRoutinesUpdate(t *testing.T) {
+	client := newTestServer(t, "/v1/routines/80155158-4a80-478d-bdeb-1070b57e5c7e", "routine_create.json")
+	routine, err := client.Routines.Update(context.Background(), "80155158-4a80-478d-bdeb-1070b57e5c7e", hevy.RoutineUpdateInput{
+		Title: "Claude Debug Routine Probe",
+		Exercises: []hevy.RoutineExerciseInput{
+			{ExerciseTemplateID: "3601968B", Sets: []hevy.RoutineSetInput{{Type: hevy.SetTypeNormal}}},
+		},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "80155158-4a80-478d-bdeb-1070b57e5c7e", routine.ID)
+	require.Len(t, routine.Exercises, 1)
+}
