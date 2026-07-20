@@ -3,6 +3,7 @@ package hevy
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 // RoutinesService handles routine endpoints.
@@ -52,18 +53,28 @@ func (s *RoutinesService) Get(ctx context.Context, routineID string) (*Routine, 
 // Create creates a new routine and returns it.
 // Returns ErrRoutineLimitExceeded if the account routine limit is reached.
 func (s *RoutinesService) Create(ctx context.Context, routine RoutineInput) (*Routine, error) {
-	var out Routine
+	var out struct {
+		Routine []Routine `json:"routine"`
+	}
 	if err := s.c.post(ctx, "/v1/routines", map[string]any{"routine": routine}, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	if len(out.Routine) == 0 {
+		return nil, fmt.Errorf("hevy: create routine: empty response")
+	}
+	return &out.Routine[0], nil
 }
 
 // Update updates an existing routine and returns the updated version.
 func (s *RoutinesService) Update(ctx context.Context, routineID string, routine RoutineUpdateInput) (*Routine, error) {
-	var out Routine
+	var out struct {
+		Routine []Routine `json:"routine"`
+	}
 	if err := s.c.put(ctx, "/v1/routines/"+routineID, map[string]any{"routine": routine}, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	if len(out.Routine) == 0 {
+		return nil, fmt.Errorf("hevy: update routine: empty response")
+	}
+	return &out.Routine[0], nil
 }

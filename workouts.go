@@ -89,20 +89,30 @@ func (s *WorkoutsService) Get(ctx context.Context, workoutID string) (*Workout, 
 
 // Create creates a new workout and returns it.
 func (s *WorkoutsService) Create(ctx context.Context, workout WorkoutInput) (*Workout, error) {
-	var out Workout
+	var out struct {
+		Workout []Workout `json:"workout"`
+	}
 	if err := s.c.post(ctx, "/v1/workouts", map[string]any{"workout": workout}, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	if len(out.Workout) == 0 {
+		return nil, fmt.Errorf("hevy: create workout: empty response")
+	}
+	return &out.Workout[0], nil
 }
 
 // Update updates an existing workout and returns the updated version.
 func (s *WorkoutsService) Update(ctx context.Context, workoutID string, workout WorkoutInput) (*Workout, error) {
-	var out Workout
+	var out struct {
+		Workout []Workout `json:"workout"`
+	}
 	if err := s.c.put(ctx, "/v1/workouts/"+workoutID, map[string]any{"workout": workout}, &out); err != nil {
 		return nil, err
 	}
-	return &out, nil
+	if len(out.Workout) == 0 {
+		return nil, fmt.Errorf("hevy: update workout: empty response")
+	}
+	return &out.Workout[0], nil
 }
 
 // listAll is a generic helper that iterates all pages of a paginated resource.
