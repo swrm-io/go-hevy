@@ -354,10 +354,12 @@ type RoutineInput struct {
 }
 
 // RoutineUpdateInput is the payload for PUT /v1/routines/{routineId}.
-// Notes is optional (unlike create).
+// Notes is optional (unlike create). The API does not support moving a
+// routine to a different folder via update; there is no FolderID field
+// here because the API rejects the folder_id key entirely on this
+// endpoint (400 Unrecognized key(s), even when set to null).
 type RoutineUpdateInput struct {
 	Title     string                 `json:"title"`
-	FolderID  *float64               `json:"folder_id,omitempty"`
 	Notes     *string                `json:"notes,omitempty"`
 	Exercises []RoutineExerciseInput `json:"exercises"`
 }

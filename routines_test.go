@@ -2,6 +2,10 @@ package hevy_test
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -87,4 +91,31 @@ func TestRoutinesUpdate(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "80155158-4a80-478d-bdeb-1070b57e5c7e", routine.ID)
 	require.Len(t, routine.Exercises, 1)
+}
+
+// TestRoutinesUpdateNeverSendsFolderID locks in the request shape sent by
+// Update: the real API rejects PUT /v1/routines/{id} requests that include
+// a folder_id key at all (400 Unrecognized key(s)), even when the value is
+// null, so RoutineUpdateInput must never have a FolderID field to send.
+func TestRoutinesUpdateNeverSendsFolderID(t *testing.T) {
+	var captured map[string]json.RawMessage
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		var decoded map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(body, &decoded))
+		require.NoError(t, json.Unmarshal(decoded["routine"], &captured))
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"routine":[{"id":"r1","title":"Test"}]}`))
+	}))
+	t.Cleanup(srv.Close)
+	client := hevy.New("test-key", hevy.WithBaseURL(srv.URL))
+
+	_, err := client.Routines.Update(context.Background(), "r1", hevy.RoutineUpdateInput{
+		Title: "Test",
+	})
+	require.NoError(t, err)
+
+	_, hasFolderID := captured["folder_id"]
+	assert.False(t, hasFolderID, "update request body must never include folder_id: the API rejects it with a 400")
 }
